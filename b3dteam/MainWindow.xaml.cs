@@ -116,6 +116,12 @@ namespace b3dteam
 
         private void button_selectFile_Click(object sender, RoutedEventArgs e)
         {
+            if((text_Info.Content as string).Contains("internet"))
+            {
+                AskUserForStatus();
+                return;
+            }
+
             SelectBall3DFile();
 
             if (IsBall3DFileCorrect)
@@ -136,8 +142,18 @@ namespace b3dteam
             RunGameWithStatus(Ball3DStatus.Ball3D_Status.Status_Offine);
         }
 
-        public void RunGameWithStatus(Ball3DStatus.Ball3D_Status status)
+        public async void RunGameWithStatus(Ball3DStatus.Ball3D_Status status)
         {
+            button_statusOffine.Visibility = Visibility.Collapsed;
+            button_statusOnline.Visibility = Visibility.Collapsed;
+            button_selectFile.Visibility = Visibility.Collapsed;
+
+            if (!(await CheckInternetConnection()) || !(await CheckSQLConnection()))
+            {
+                return;
+            }
+            text_Info.Content = "";
+
             this.Hide();
 
             Ball3DStatus.ClientStatus = status;
@@ -156,12 +172,36 @@ namespace b3dteam
             Ball3DGameProcess.RunGame();
         }
 
-        public void ExitApplicationWithOffineStatus()
+        private async Task<bool> CheckInternetConnection()
         {
-            Ball3DStatus.UpdateStatus(Ball3DStatus.Ball3D_Status.Status_Offine);
-            this.Close();
-        }
+            text_Info.Content = "Checking internet connection...";
 
+            if (!(await Network.IsInternetAvailable()))
+            {
+                text_Info.Content = "You don't have internet connection.";
+                button_selectFile.Visibility = Visibility.Visible;
+                button_statusOffine.Visibility = Visibility.Collapsed;
+                button_statusOnline.Visibility = Visibility.Collapsed;
+                button_selectFile.Content = "Try again";
+                return false;
+            }
+            return true;
+        }
+        private async Task<bool> CheckSQLConnection()
+        {
+            text_Info.Content = "Checking database connection...";
+
+            if (!(await SQLManager.ConnectToDatabase()))
+            {
+                text_Info.Content = "There was problem with connection with database. Write to grs4_98@o2.pl";
+                button_selectFile.Visibility = Visibility.Visible;
+                button_statusOffine.Visibility = Visibility.Collapsed;
+                button_statusOnline.Visibility = Visibility.Collapsed;
+                button_selectFile.Content = "Try again";
+                return false;
+            }
+            return true;
+        }
         //////////////////////////////////////////////////////////////////////////
 
         private void ContextMenu_statusOnline(object sender, RoutedEventArgs e)
@@ -173,10 +213,10 @@ namespace b3dteam
         {
             Ball3DStatus.ClientStatus = Ball3DStatus.Ball3D_Status.Status_Offine;
         }
-
+            
         private void ContextMenu_exitApplication(object sender, RoutedEventArgs e)
         {
-            ExitApplicationWithOffineStatus();
+            this.Close();
         }
     }
 }

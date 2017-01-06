@@ -39,7 +39,7 @@ namespace b3dteam.Model
                 }
                 else
                 {
-                    MainWindowInstance.ExitApplicationWithOffineStatus();
+                    MainWindowInstance.Close();
                     break;
                 }
             }
