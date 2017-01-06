@@ -5,8 +5,18 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:b3dteam"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="Ball3D Team Launcher" Height="200" Width="400">
+    
     <Grid>
         
+        <Label Name="text_Info"
+               HorizontalAlignment="Center"></Label>
+        
+        <Button Click="button_selectFile_Click"
+                Name="button_selectFile"
+                Width="100"
+                Height="30">
+            Select file</Button>
     </Grid>
+    
 </Window>
