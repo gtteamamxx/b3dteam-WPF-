@@ -3,20 +3,61 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:tb="http://www.hardcodet.net/taskbar"
         xmlns:local="clr-namespace:b3dteam"
         mc:Ignorable="d"
+        ResizeMode="CanMinimize"
         Title="Ball3D Team Launcher" Height="200" Width="400">
-    
+
     <Grid>
-        
+        <Grid.Resources>
+            <ContextMenu x:Key="TaskBarContextMenu">
+                <MenuItem Header="Set status to Online"
+                          Click="ContextMenu_statusOnline"/>
+                <MenuItem Header="Set status to Offine"
+                          Click="ContextMenu_statusOnline"/>
+                <Separator/>
+                <MenuItem Header="Exit (Offine)"
+                          Click="ContextMenu_exitApplication"/>
+            </ContextMenu>
+        </Grid.Resources>
+        <tb:TaskbarIcon x:Name="myNotifyIcon"
+                        Visibility="Visible"
+                        ToolTipText="Ball3DLauncher"
+                        MenuActivation="LeftOrRightClick"
+                        IconSource="/Images/icon.ico"
+                        ContextMenu="{StaticResource TaskBarContextMenu}"
+                        PopupActivation="DoubleClick" />
+
         <Label Name="text_Info"
+               Foreground="Green"
                HorizontalAlignment="Center"></Label>
-        
+
         <Button Click="button_selectFile_Click"
                 Name="button_selectFile"
                 Width="100"
                 Height="30">
             Select file</Button>
+
+        <Button Click="button_statusOnline_Click"
+                Name="button_statusOnline"
+                Width="100"
+                VerticalAlignment="Bottom"
+                HorizontalAlignment="Left"
+                Height="30"
+                Margin="50,10"
+                Visibility="Collapsed">
+            Make me online</Button>
+
+        <Button Click="button_statusOffine_Click"
+                Name="button_statusOffine"
+                Width="100"
+                VerticalAlignment="Bottom"
+                HorizontalAlignment="Right"
+                Height="30"
+                Margin="50,10"
+                Visibility="Collapsed">
+            Make me offine</Button>
     </Grid>
-    
+
 </Window>

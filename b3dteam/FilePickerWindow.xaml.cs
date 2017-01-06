@@ -20,8 +20,6 @@ namespace b3dteam
     /// </summary>
     public partial class FilePickerWindow : Window
     {
-        public delegate void pickerResultChanged(bool result);
-        public event pickerResultChanged OnPickerResultChanged;
 
         public string Ball3DPath = string.Empty;
 
@@ -31,7 +29,7 @@ namespace b3dteam
 
             if (File.Exists(textbox_FilePath.Text))
             {
-                Ball3DPath = textbox_FilePath.Text;
+                Ball3DPath = @textbox_FilePath.Text;
                 button_Accept.IsEnabled = true;
             }
         }
@@ -48,10 +46,10 @@ namespace b3dteam
 
         private void button_FilePicker_Click(object sender, RoutedEventArgs e)
         {
-            OnPickerResultChanged?.Invoke(AskUserForBall3DExeFile());
+            AskUserForBall3DExeFile();
         }
 
-        public bool AskUserForBall3DExeFile()
+        public void AskUserForBall3DExeFile()
         {
             Microsoft.Win32.OpenFileDialog openPicker = new Microsoft.Win32.OpenFileDialog()
             {
@@ -63,15 +61,13 @@ namespace b3dteam
 
             if (result == true)
             {
-                Ball3DPath = textbox_FilePath.Text = openPicker.FileName.ToString();
+                Ball3DPath = textbox_FilePath.Text = @openPicker.FileName.ToString();
                 button_Accept.IsEnabled = true;
-                return true;
             }
             else
             {
                 Ball3DPath = textbox_FilePath.Text = "You have to select a file!.";
                 button_Accept.IsEnabled = false;
-                return false;
             }
         }
 
