@@ -8,7 +8,7 @@ using System.Windows;
 
 namespace b3dteam.Model
 {
-    class SQLManager
+    public static class SQLManager
     {
         public static MySqlConnection SqlConnection;
 
@@ -46,5 +46,12 @@ namespace b3dteam.Model
             }
         }
 
+        public static bool UpdateStatus(Ball3DStatus.Ball3D_Status status)
+        {
+            string query = "UPDATE `USERS` SET lastactivity = " + TimeSpan.FromTicks(0).Ticks + " WHERE `userid` = " + ";";//userid
+
+            using (var coomand = new MySqlCommand())
+            return true;
+        }
     }
 }

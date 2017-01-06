@@ -65,7 +65,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="FilePickerWindow.xaml">
+    <Compile Include="Model\User.cs" />
+    <Compile Include="View\LoginWindow.xaml.cs">
+      <DependentUpon>LoginWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\LoginWindow_Login.xaml.cs">
+      <DependentUpon>LoginWindow_Login.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\LoginWindow_Register.xaml.cs">
+      <DependentUpon>LoginWindow_Register.xaml</DependentUpon>
+    </Compile>
+    <Page Include="View\FilePickerWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -77,13 +87,26 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="FilePickerWindow.xaml.cs">
+    <Compile Include="Model\Cryptography.cs" />
+    <Compile Include="View\FilePickerWindow.xaml.cs">
       <DependentUpon>FilePickerWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="View\LoginWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\LoginWindow_Login.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\LoginWindow_Register.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\Ball3DProcess.cs" />

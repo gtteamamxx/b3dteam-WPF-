@@ -28,6 +28,7 @@ namespace b3dteam
         public bool IsBall3DFileCorrect => Ball3DPath.Contains(".exe");
 
         public Ball3DProcess Ball3DGameProcess;
+        public User ClientUser;
 
         public MainWindow()
         {
@@ -87,14 +88,13 @@ namespace b3dteam
 
         public void SelectBall3DFile()
         {
-
             button_statusOffine.Visibility = Visibility.Collapsed;
             button_statusOnline.Visibility = Visibility.Collapsed;
             button_selectFile.Visibility = Visibility.Visible;
 
             text_Info.Content = "Waiting for select 'Ball 3D.exe'...";
 
-            var filePickerWindow = new FilePickerWindow();
+            var filePickerWindow = new View.FilePickerWindow();
 
             filePickerWindow.Closed += (s, e) =>
             {
@@ -148,10 +148,11 @@ namespace b3dteam
             button_statusOnline.Visibility = Visibility.Collapsed;
             button_selectFile.Visibility = Visibility.Collapsed;
 
-            if (!(await CheckInternetConnection()) || !(await CheckSQLConnection()))
+            if (!(await CheckInternetConnection()) || !(await CheckSQLConnection()) || !CheckUserLogin())
             {
                 return;
             }
+
             text_Info.Content = "";
 
             this.Hide();
@@ -165,7 +166,6 @@ namespace b3dteam
                     Ball3DStatus.UpdateStatus(Ball3DStatus.Ball3D_Status.Status_Online);
                     Ball3DGameProcess.CheckBall3DProcessAndSendStatus();
                 }
-
                 return;
             }
 
@@ -202,6 +202,37 @@ namespace b3dteam
             }
             return true;
         }
+        
+        private bool CheckUserLogin()
+        {
+            text_Info.Content = "Checking user...";
+
+            if (Properties.Settings.Default.userid != -1)
+            {
+                ClientUser = new User(Properties.Settings.Default.userid,
+                    Properties.Settings.Default.login, Properties.Settings.Default.password);
+
+                return true;
+            }
+            else
+            {
+                text_Info.Content = "You have to login to an account first!";
+                button_selectFile.Visibility = Visibility.Visible;
+                button_selectFile.Content = "Login";
+
+                var loginWindow = new View.LoginWindow();
+
+                loginWindow.Closed += (s, e) =>
+                {
+                    button_selectFile.Visibility = Visibility.Collapsed;
+                };
+
+                loginWindow.ShowDialog();
+
+                return false;
+            }
+        }
+
         //////////////////////////////////////////////////////////////////////////
 
         private void ContextMenu_statusOnline(object sender, RoutedEventArgs e)
