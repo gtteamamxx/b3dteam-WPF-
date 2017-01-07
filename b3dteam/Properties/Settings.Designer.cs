@@ -82,5 +82,17 @@ namespace b3dteam.Properties {
                 this["email"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int usertype {
+            get {
+                return ((int)(this["usertype"]));
+            }
+            set {
+                this["usertype"] = value;
+            }
+        }
     }
 }

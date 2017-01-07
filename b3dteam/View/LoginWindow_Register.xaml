@@ -67,5 +67,10 @@
                 Click="button_Cancel_Click">
             Cancel
         </Button>
+
+        <TextBlock Name="textblock_Info"
+                   VerticalAlignment="Bottom"
+                   HorizontalAlignment="Center"
+                   Margin="3" />
     </Grid>
 </UserControl>

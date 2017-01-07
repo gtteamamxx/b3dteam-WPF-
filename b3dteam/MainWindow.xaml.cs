@@ -28,7 +28,7 @@ namespace b3dteam
         public bool IsBall3DFileCorrect => Ball3DPath.Contains(".exe");
 
         public Ball3DProcess Ball3DGameProcess;
-        public User ClientUser;
+        public static User ClientUser;
 
         public MainWindow()
         {
@@ -126,6 +126,11 @@ namespace b3dteam
                 RunGameWithStatus(Ball3DStatus.ClientStatus);
                 return;
             }
+            else if((text_Info.Content as string).Contains("account"))
+            {
+                RunGameWithStatus(Ball3DStatus.ClientStatus);
+                return;
+            }
 
             SelectBall3DFile();
 
@@ -164,11 +169,15 @@ namespace b3dteam
 
             this.Hide();
 
+            if(status == Ball3DStatus.Ball3D_Status.Status_Online)
+            {
+                Ball3DStatus.UpdateStatus(Ball3DStatus.Ball3D_Status.Status_Online);
+            }
+
             if (Ball3DGameProcess.IsBall3DProcessRunning())
             {
                 if(status == Ball3DStatus.Ball3D_Status.Status_Online)
                 {
-                    Ball3DStatus.UpdateStatus(Ball3DStatus.Ball3D_Status.Status_Online);
                     Ball3DGameProcess.CheckBall3DProcessAndSendStatus();
                 }
                 return;
@@ -215,7 +224,7 @@ namespace b3dteam
             if (Properties.Settings.Default.userid != -1)
             {
                 ClientUser = new User(Properties.Settings.Default.userid,
-                    Properties.Settings.Default.login, Properties.Settings.Default.password, Properties.Settings.Default.email);
+                    Properties.Settings.Default.login, Properties.Settings.Default.password, Properties.Settings.Default.email, Properties.Settings.Default.usertype);
 
                 return true;
             }
@@ -229,7 +238,10 @@ namespace b3dteam
 
                 loginWindow.Closed += (s, e) =>
                 {
-                    button_selectFile.Visibility = Visibility.Collapsed;
+                    if(ClientUser != null)
+                    {
+                        RunGameWithStatus(Ball3DStatus.ClientStatus);
+                    }
                 };
 
                 loginWindow.ShowDialog();

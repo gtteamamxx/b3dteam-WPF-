@@ -1,6 +1,7 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -18,7 +19,14 @@ namespace b3dteam.Model
             Failed,
             Succesful
         }
-       
+
+       public enum LoginAccountStatus
+        {
+            Account_Not_Activated,
+            Bad_Authorization,
+            Failed,
+            Succesful
+        }
         public static SqlConnection SqlConnection;
 
         public static async Task<bool> ConnectToDatabase()
@@ -26,9 +34,7 @@ namespace b3dteam.Model
             using (var _sqlConnection = new SqlConnection())
             {
                 SqlConnectionStringBuilder sqlsb = new SqlConnectionStringBuilder();
-                /*Durnign process :))) */
-                sqlsb.PacketSize = 4096;
-                sqlsb.PersistSecurityInfo = false;
+                //buuuu no pass here :)))
 
                 _sqlConnection.ConnectionString = sqlsb.ConnectionString;
 
@@ -45,11 +51,12 @@ namespace b3dteam.Model
                     {
                         return false;
                     }
+
+                    
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error while connecting to server" + Environment.NewLine + ex.Message);
-                    return false;
+                    MessageBox.Show("Error while connecting to server" + Environment.NewLine + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);                    return false;
                 }
             }
         }
@@ -67,7 +74,7 @@ namespace b3dteam.Model
             {
                 return RegisterAccountStatus.Email_Alerady_Exists;
             }
-            else if((await _RegisterNewUser(login, password, email)) == true || userExists == null || emailExists == null)
+            else if((await _RegisterNewUser(login, password, email)) == false || userExists == null || emailExists == null)
             {
                 return RegisterAccountStatus.Failed;
             }
@@ -91,11 +98,48 @@ namespace b3dteam.Model
             }
             catch(Exception ex)
             {
-                MessageBox.Show("There was problem with registering an user." + Environment.NewLine + ex.Message);
+                MessageBox.Show("There was problem with registering an user." + Environment.NewLine + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
             
         }
+
+        public static async Task<LoginAccountStatus?> LoginUser(string login, string password)
+        {
+            string query = $"SELECT * FROM USERS WHERE login = '{login}' AND password = '{Cryptography.Sha256(password)}';";
+
+            try
+            {
+                using (var command = new SqlCommand(query, SqlConnection))
+                {
+                    await SqlConnection.OpenAsync();
+
+                    var result = await command.ExecuteScalarAsync() as User;
+
+                    SqlConnection.Close();
+
+                    if(result != null)
+                    {
+                        if(result.usertype == 0)
+                        {
+                            return LoginAccountStatus.Account_Not_Activated;
+                        }
+
+                        MainWindow.ClientUser = result;
+
+                        return LoginAccountStatus.Succesful;
+                    }
+
+                    return LoginAccountStatus.Bad_Authorization;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("There was problem with login." + Environment.NewLine + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return LoginAccountStatus.Failed;
+            }
+        }
+
         private static async Task<bool?> CheckIfUserExists(string login)
         {
             string query = "SELECT login FROM USERS WHERE login = '" + login + "';";
@@ -113,7 +157,7 @@ namespace b3dteam.Model
             }
             catch(Exception ex)
             {
-                MessageBox.Show("There was problem with registering an user." + Environment.NewLine + ex.Message);
+                MessageBox.Show("There was problem with registering an user." + Environment.NewLine + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
         }
@@ -135,7 +179,7 @@ namespace b3dteam.Model
             }
             catch(Exception ex)
             {
-                MessageBox.Show("There was problem with registering an user." + Environment.NewLine + ex.Message);
+                MessageBox.Show("There was problem with registering an user." + Environment.NewLine + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
         }

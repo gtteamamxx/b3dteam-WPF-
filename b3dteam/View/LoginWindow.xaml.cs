@@ -40,6 +40,7 @@ namespace b3dteam.View
 
             frame_Center.Navigate(null);
         }
+
         private void button_Login_Click(object sender, RoutedEventArgs e)
         {
             HideButtons();
