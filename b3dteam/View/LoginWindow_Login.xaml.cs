@@ -24,5 +24,15 @@ namespace b3dteam.View
         {
             InitializeComponent();
         }
+
+        private void button_Cancel_Click(object sender, RoutedEventArgs e)
+        {
+            LoginWindow.gui.ShowMainView();
+        }
+
+        private void button_Login_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

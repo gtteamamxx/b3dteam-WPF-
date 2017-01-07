@@ -5,8 +5,67 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:b3dteam.View"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
-    <Grid>
+             d:DesignHeight="360" d:DesignWidth="500">
+    <Grid Background="White">
+        <Grid Margin="0,-60,0,0" 
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+
+            <StackPanel>
+                <Label>Login: (Nick in ball3d)</Label>
+                <TextBox Name="textbox_Login"
+                         Width="200"
+                         Height="25"
+                         VerticalContentAlignment="Center"
+                         HorizontalAlignment="Left"/>
+            </StackPanel>
+
+            <StackPanel Margin="0,50,0,0">
+                <Label>Password:</Label>
+                <PasswordBox Name="textbox_Password"
+                             Width="200"
+                             Height="25"
+                             VerticalContentAlignment="Center"
+                             HorizontalAlignment="Left"/>
+            </StackPanel>
             
+            <StackPanel Margin="0,100,0,0">
+                <Label>Re-Type password:</Label>
+                <PasswordBox Name="textbox_Password_Retype"
+                             Width="200"
+                             Height="25"
+                             VerticalContentAlignment="Center"
+                             HorizontalAlignment="Left"/>
+            </StackPanel>
+            
+            <StackPanel Margin="0,150,0,0">
+                <Label>E-mail:</Label>
+                <TextBox Name="textbox_Email"
+                             Width="200"
+                             Height="25"
+                             VerticalContentAlignment="Center"
+                             HorizontalAlignment="Left"/>
+            </StackPanel>
+        </Grid>
+
+        <Button Name="button_Register"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Bottom"
+                Width="100"
+                Height="30"
+                Margin="100,0,0,40"
+                Click="button_Register_Click">
+            Register
+        </Button>
+
+        <Button Name="button_Cancel"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Width="100"
+                Height="30"
+                Margin="0,0,100,40"
+                Click="button_Cancel_Click">
+            Cancel
+        </Button>
     </Grid>
 </UserControl>

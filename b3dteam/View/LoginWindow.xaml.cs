@@ -19,18 +19,36 @@ namespace b3dteam.View
     /// </summary>
     public partial class LoginWindow : Window
     {
+        public static LoginWindow gui;
+
         public LoginWindow()
         {
             InitializeComponent();
+            gui = this;
         }
 
+        private void HideButtons()
+        {
+            button_Login.Visibility = Visibility.Collapsed;
+            button_Register.Visibility = Visibility.Collapsed;
+        }
+
+        public void ShowMainView()
+        {
+            button_Login.Visibility = Visibility.Visible;
+            button_Register.Visibility = Visibility.Visible;
+
+            frame_Center.Navigate(null);
+        }
         private void button_Login_Click(object sender, RoutedEventArgs e)
         {
-            frame_Center.NavigationService.Navigate(new LoginWindow_Login());
+            HideButtons();
+            frame_Center.NavigationService.Navigate(new LoginWindow_Login(), this);
         }
 
         private void button_Register_Click(object sender, RoutedEventArgs e)
         {
+            HideButtons();
             frame_Center.NavigationService.Navigate(new LoginWindow_Register());
         }
     }

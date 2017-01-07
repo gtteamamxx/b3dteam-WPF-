@@ -72,7 +72,7 @@ namespace b3dteam
         {
             if (File.Exists(Properties.Settings.Default.Ball3DExePath))
             {
-                this.Height = 125;
+                this.Height = 150;
 
                 button_statusOffine.Visibility = Visibility.Visible;
                 button_statusOnline.Visibility = Visibility.Visible;
@@ -116,9 +116,14 @@ namespace b3dteam
 
         private void button_selectFile_Click(object sender, RoutedEventArgs e)
         {
-            if((text_Info.Content as string).Contains("internet"))
+            if ((text_Info.Content as string).Contains("internet"))
             {
                 AskUserForStatus();
+                return;
+            }
+            else if((text_Info.Content as string).Contains("There was"))
+            {
+                RunGameWithStatus(Ball3DStatus.ClientStatus);
                 return;
             }
 
@@ -144,6 +149,8 @@ namespace b3dteam
 
         public async void RunGameWithStatus(Ball3DStatus.Ball3D_Status status)
         {
+            Ball3DStatus.ClientStatus = status;
+
             button_statusOffine.Visibility = Visibility.Collapsed;
             button_statusOnline.Visibility = Visibility.Collapsed;
             button_selectFile.Visibility = Visibility.Collapsed;
@@ -156,8 +163,6 @@ namespace b3dteam
             text_Info.Content = "";
 
             this.Hide();
-
-            Ball3DStatus.ClientStatus = status;
 
             if (Ball3DGameProcess.IsBall3DProcessRunning())
             {
@@ -193,7 +198,7 @@ namespace b3dteam
 
             if (!(await SQLManager.ConnectToDatabase()))
             {
-                text_Info.Content = "There was problem with connection with database. Write to grs4_98@o2.pl";
+                text_Info.Content = "There was problem with connection to database." + Environment.NewLine + "Write to grs4_98@o2.pl";
                 button_selectFile.Visibility = Visibility.Visible;
                 button_statusOffine.Visibility = Visibility.Collapsed;
                 button_statusOnline.Visibility = Visibility.Collapsed;
@@ -210,7 +215,7 @@ namespace b3dteam
             if (Properties.Settings.Default.userid != -1)
             {
                 ClientUser = new User(Properties.Settings.Default.userid,
-                    Properties.Settings.Default.login, Properties.Settings.Default.password);
+                    Properties.Settings.Default.login, Properties.Settings.Default.password, Properties.Settings.Default.email);
 
                 return true;
             }

@@ -11,6 +11,7 @@
         <Label Margin="10">Before using this tool, you have to login.</Label>
 
         <Frame Name="frame_Center"
+               NavigationUIVisibility="Hidden"
                Margin="0,40,0,0"/>
         
         <Button Width="100" 

@@ -11,12 +11,16 @@ namespace b3dteam.Model
         public int userid { get; set; }
         public string login { get; set; }
         public string password { get; set; }
+        public string email { get; set; }
 
-        public User(int userid, string login, string password)
+        public User(int userid, string login, string password, string email)
         {
             this.userid = userid;
             this.login = login;
             this.password = password;
+            this.email = email;
         }
+
+
     }
 }

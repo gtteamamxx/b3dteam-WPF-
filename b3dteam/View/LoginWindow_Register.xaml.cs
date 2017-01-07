@@ -24,5 +24,16 @@ namespace b3dteam.View
         {
             InitializeComponent();
         }
+
+        private async void button_Register_Click(object sender, RoutedEventArgs e)
+        {
+            Model.SQLManager.RegisterAccountStatus result = await Model.SQLManager.RegisterNewUser(textbox_Login.Text, textbox_Password.Password, textbox_Email.Text);
+
+        }
+
+        private void button_Cancel_Click(object sender, RoutedEventArgs e)
+        {
+            LoginWindow.gui.ShowMainView();
+        }
     }
 }
