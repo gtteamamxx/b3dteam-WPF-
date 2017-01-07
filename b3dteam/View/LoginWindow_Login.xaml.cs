@@ -23,6 +23,40 @@ namespace b3dteam.View
         public LoginWindow_Login()
         {
             InitializeComponent();
+
+            checkbox_AutoLogin.IsChecked = Properties.Settings.Default.autologin;
+            checkbox_Rememberme.IsChecked = Properties.Settings.Default.rememberme;
+
+            if(checkbox_AutoLogin.IsChecked == true)
+            {
+                checkbox_Rememberme.IsChecked = true;
+                checkbox_Rememberme.IsEnabled = false;
+            }
+
+            if(checkbox_Rememberme.IsChecked == true)
+            {
+                textbox_Login.Text = Properties.Settings.Default.login;
+                textbox_Password.Password = Properties.Settings.Default.password;
+            }
+
+            checkbox_AutoLogin.Checked += (s, e) =>
+            {
+                if(checkbox_AutoLogin.IsChecked == true)
+                {
+                    checkbox_Rememberme.IsChecked = true;
+                    checkbox_Rememberme.IsEnabled = false;
+                }
+
+                Properties.Settings.Default.autologin = checkbox_AutoLogin.IsChecked == true ? true : false;
+                Properties.Settings.Default.Save();
+            };
+
+            checkbox_Rememberme.Checked += (s, e) =>
+            {
+                Properties.Settings.Default.rememberme = checkbox_Rememberme.IsChecked == true ? true : false;
+                Properties.Settings.Default.Save();
+            };
+            
         }
 
         private void button_Cancel_Click(object sender, RoutedEventArgs e)

@@ -29,6 +29,13 @@
                              HorizontalAlignment="Left"/>
             </StackPanel>
 
+            <CheckBox Name="checkbox_AutoLogin"
+                      Margin="0,105,0,0"
+                      Content="Autologin"/>
+            <CheckBox Name="checkbox_Rememberme"
+                      Margin="0,125,0,0"
+                      Content="Remember me"/>
+
         </Grid>
 
         <Button Name="button_Login"

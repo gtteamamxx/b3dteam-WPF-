@@ -40,5 +40,23 @@ namespace b3dteam.Model
             this.lastactivity = lastactivity;
             this.regtime = regtime;
         }
+
+        public void Save()
+        {
+            Properties.Settings.Default.email = email;
+            Properties.Settings.Default.login = login;
+            Properties.Settings.Default.password = password;
+            Properties.Settings.Default.userid = userid;
+            Properties.Settings.Default.usertype = usertype;
+            Properties.Settings.Default.regtime = regtime;
+            Properties.Settings.Default.lastactivity = lastactivity;
+
+            Properties.Settings.Default.Save();
+        }
+
+        public void Reset()
+        {
+            Properties.Settings.Default.Reset();
+        }
     }
 }

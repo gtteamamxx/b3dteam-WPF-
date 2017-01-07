@@ -68,9 +68,9 @@ namespace b3dteam.View
             Color green = new Color() { G = 255, A = 50 };
 
             if (textbox_Password.Password != textbox_Password_Retype.Password
-                || textbox_Password.Password.Length < 5)
+                || textbox_Password.Password.Length < 5 || textbox_Password.Password.Length > 16)
             {
-                textblock_Info.Text = textbox_Password.Password.Length <= 5 ? "Password must have minimum 5 chars." : "You just typed two diffrent passwords.";
+                textblock_Info.Text = (textbox_Password.Password.Length < 5 || textbox_Password.Password.Length > 16)? "Password must have 5-16 chars;" : "You just typed two diffrent passwords.";
                 textbox_Password.Background = new SolidColorBrush(red);
                 textbox_Password_Retype.Background = new SolidColorBrush(red);
                 textblock_Info.Foreground = new SolidColorBrush(Colors.Red);

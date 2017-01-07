@@ -34,7 +34,7 @@ namespace b3dteam.Model
             using (var _sqlConnection = new SqlConnection())
             {
                 SqlConnectionStringBuilder sqlsb = new SqlConnectionStringBuilder();
-                //buuuu no pass here :)))
+
 
                 _sqlConnection.ConnectionString = sqlsb.ConnectionString;
 
@@ -106,7 +106,9 @@ namespace b3dteam.Model
 
         public static async Task<LoginAccountStatus?> LoginUser(string login, string password)
         {
-            string query = $"SELECT * FROM USERS WHERE login = '{login}' AND password = '{Cryptography.Sha256(password)}';";
+            var pass = Properties.Settings.Default.rememberme == true && password.Length > 16 ? Properties.Settings.Default.password : Cryptography.Sha256(password);
+
+            string query = $"SELECT * FROM USERS WHERE login = '{login}' AND password = '{pass}';";
 
             try
             {
@@ -114,23 +116,37 @@ namespace b3dteam.Model
                 {
                     await SqlConnection.OpenAsync();
 
-                    var result = await command.ExecuteScalarAsync() as User;
-
-                    SqlConnection.Close();
-
-                    if(result != null)
+                    using (SqlDataReader rd = await command.ExecuteReaderAsync())
                     {
-                        if(result.usertype == 0)
+                        rd.Read();
+
+                        if (rd.HasRows == true)
                         {
-                            return LoginAccountStatus.Account_Not_Activated;
+                            int _userid = rd.GetInt32(0);
+                            string _login = rd.GetString(1);
+                            string _password = rd.GetString(2);
+                            string _email = rd.GetString(3);
+                            int _usertype = rd.GetInt32(4);
+                            int _lastactivity = rd.GetInt32(5);
+                            int _regtime = rd.GetInt32(6);
+
+                            SqlConnection.Close();
+
+                            if (_usertype == 0)
+                            {
+                                return LoginAccountStatus.Account_Not_Activated;
+                            }
+
+                            MainWindow.ClientUser = new User(_userid, _login, _password, _email, _lastactivity, _regtime, _usertype);
+                            MainWindow.ClientUser.Save();
+
+                            return LoginAccountStatus.Succesful;
                         }
 
-                        MainWindow.ClientUser = result;
+                        SqlConnection.Close();
 
-                        return LoginAccountStatus.Succesful;
+                        return LoginAccountStatus.Bad_Authorization;
                     }
-
-                    return LoginAccountStatus.Bad_Authorization;
                 }
             }
             catch (Exception ex)

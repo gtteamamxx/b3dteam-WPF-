@@ -62,10 +62,7 @@ namespace b3dteam
             Properties.Settings.Default.Ball3DExePath = @Ball3DPath;
             Properties.Settings.Default.Save();
 
-            Properties.Settings.Default.PropertyChanged += (s, e) =>
-            {
-                AskUserForStatus();
-            };
+            AskUserForStatus();
         }
 
         public void AskUserForStatus()
@@ -98,7 +95,7 @@ namespace b3dteam
 
             filePickerWindow.Closed += (s, e) =>
             {
-                if (Ball3DPath == string.Empty)
+                if (Ball3DPath == string.Empty || Ball3DPath == "None")
                 {
                     if (filePickerWindow.Ball3DPath == string.Empty || filePickerWindow.Ball3DPath.Contains("You have"))
                     {
@@ -216,15 +213,23 @@ namespace b3dteam
             }
             return true;
         }
-        
+
+        private bool _LoginWindowClosedEventSubscribed = false;
+
         private bool CheckUserLogin()
         {
             text_Info.Content = "Checking user...";
 
-            if (Properties.Settings.Default.userid != -1)
+            if (ClientUser != null)
+            {
+                return true;
+            }
+            else if (Properties.Settings.Default.userid != -1 && Properties.Settings.Default.autologin == true)
             {
                 ClientUser = new User(Properties.Settings.Default.userid,
-                    Properties.Settings.Default.login, Properties.Settings.Default.password, Properties.Settings.Default.email, Properties.Settings.Default.usertype);
+                    Properties.Settings.Default.login, Properties.Settings.Default.password, 
+                    Properties.Settings.Default.email, Properties.Settings.Default.lastactivity, 
+                    Properties.Settings.Default.regtime,Properties.Settings.Default.usertype);
 
                 return true;
             }
@@ -236,13 +241,18 @@ namespace b3dteam
 
                 var loginWindow = new View.LoginWindow();
 
-                loginWindow.Closed += (s, e) =>
+                if (!_LoginWindowClosedEventSubscribed)
                 {
-                    if(ClientUser != null)
+                    _LoginWindowClosedEventSubscribed = true;
+
+                    loginWindow.Closed += (s, e) =>
                     {
-                        RunGameWithStatus(Ball3DStatus.ClientStatus);
-                    }
-                };
+                        if (ClientUser != null)
+                        {
+                            RunGameWithStatus(Ball3DStatus.ClientStatus);
+                        }
+                    };
+                }
 
                 loginWindow.ShowDialog();
 

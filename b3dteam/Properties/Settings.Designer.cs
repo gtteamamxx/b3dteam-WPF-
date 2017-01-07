@@ -94,5 +94,53 @@ namespace b3dteam.Properties {
                 this["usertype"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool autologin {
+            get {
+                return ((bool)(this["autologin"]));
+            }
+            set {
+                this["autologin"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int lastactivity {
+            get {
+                return ((int)(this["lastactivity"]));
+            }
+            set {
+                this["lastactivity"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int regtime {
+            get {
+                return ((int)(this["regtime"]));
+            }
+            set {
+                this["regtime"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool rememberme {
+            get {
+                return ((bool)(this["rememberme"]));
+            }
+            set {
+                this["rememberme"] = value;
+            }
+        }
     }
 }
