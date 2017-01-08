@@ -68,32 +68,32 @@ namespace b3dteam.View
 
         private async void button_Register_Click(object sender, RoutedEventArgs e)
         {
-            if(_lastClickedTime > helper.SQLManager.GetTimeStamp())
+            if (_lastClickedTime > helper.SQLManager.GetTimeStamp())
             {
                 textblock_Info.Text = "You have to wait a while, before pressing 'Register' button!";
                 textblock_Info.Foreground = new SolidColorBrush(Colors.Red);
             }
 
-            _lastClickedTime = helper.SQLManager.GetTimeStamp()+120;
+            _lastClickedTime = helper.SQLManager.GetTimeStamp() + 120;
             Color red = new Color() { R = 255, A = 50 };
             Color green = new Color() { G = 255, A = 50 };
 
             if (textbox_Password.Password != textbox_Password_Retype.Password
                 || textbox_Password.Password.Length < 5 || textbox_Password.Password.Length > 16)
             {
-                textblock_Info.Text = (textbox_Password.Password.Length < 5 || textbox_Password.Password.Length > 16)? "Password must have 5-16 chars;" : "You just typed two diffrent passwords.";
+                textblock_Info.Text = (textbox_Password.Password.Length < 5 || textbox_Password.Password.Length > 16) ? "Password must have 5-16 chars;" : "You just typed two diffrent passwords.";
                 textbox_Password.Background = new SolidColorBrush(red);
                 textbox_Password_Retype.Background = new SolidColorBrush(red);
                 textblock_Info.Foreground = new SolidColorBrush(Colors.Red);
                 return;
             }
-            else if(!IsValidEmail(textbox_Email.Text))
+            else if (!IsValidEmail(textbox_Email.Text))
             {
                 textblock_Info.Text = "Please type valid e-mail adress";
                 textbox_Email.Background = new SolidColorBrush(red);
                 return;
             }
-            
+
             button_Register.IsEnabled = false;
 
             helper.SQLManager.RegisterAccountStatus result = await helper.SQLManager.RegisterNewUser(Model.Ball3DStatus.ClientStatus, textbox_Login.Text, textbox_Password.Password, textbox_Email.Text);

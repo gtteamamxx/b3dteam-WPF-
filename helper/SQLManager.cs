@@ -19,7 +19,7 @@ namespace helper
             Succesful
         }
 
-       public enum LoginAccountStatus
+        public enum LoginAccountStatus
         {
             Account_Not_Activated,
             Bad_Authorization,
@@ -37,10 +37,11 @@ namespace helper
 
         public static async Task<bool> ConnectToDatabase()
         {
-            
+
             using (var _sqlConnection = new SqlConnection())
             {
                 SqlConnectionStringBuilder sqlsb = new SqlConnectionStringBuilder();
+
 
 
                 _sqlConnection.ConnectionString = sqlsb.ConnectionString;
@@ -72,16 +73,16 @@ namespace helper
         {
             bool? userExists = await CheckIfUserExists(login);
             bool? emailExists = await CheckIfEmailWExists(email);
-            
+
             if (userExists == true)
             {
                 return RegisterAccountStatus.Login_Alerady_Exists;
             }
-            else if(emailExists == true)
+            else if (emailExists == true)
             {
                 return RegisterAccountStatus.Email_Alerady_Exists;
             }
-            else if((await _RegisterNewUser(status, login, password, email)) == false || userExists == null || emailExists == null)
+            else if ((await _RegisterNewUser(status, login, password, email)) == false || userExists == null || emailExists == null)
             {
                 return RegisterAccountStatus.Failed;
             }
@@ -100,6 +101,7 @@ namespace helper
                     await SqlConnection.OpenAsync();
                     await command.ExecuteNonQueryAsync();
                     SqlConnection.Close();
+                    User.ClientStatus = status;
                     return true;
                 }
             }
@@ -109,7 +111,7 @@ namespace helper
                 System.Windows.MessageBox.Show("There was problem with registering an user.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
-            
+
         }
 
         public static async Task<Tuple<LoginAccountStatus, User>> LoginUser(string login, string password)
@@ -178,7 +180,7 @@ namespace helper
             catch
             {
                 SqlConnection.Close();
-                MessageBox.Show("There was problem with registering an user.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("There was problem with checking an user.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
         }
@@ -201,15 +203,16 @@ namespace helper
             catch
             {
                 SqlConnection.Close();
-                MessageBox.Show("There was problem with registering an user.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("There was problem with checking a email.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
         }
 
         public static async Task<bool> UpdateStatus(Ball3D_Status status, int userid)
         {
-            if(status == Ball3D_Status.Status_Offine)
+            if (status == Ball3D_Status.Status_Offine)
             {
+                User.ClientStatus = status;
                 return true;
             }
 
@@ -219,10 +222,10 @@ namespace helper
             {
                 using (var command = new SqlCommand(query, SqlConnection))
                 {
+                    User.ClientStatus = status;
                     await SqlConnection.OpenAsync();
                     await command.ExecuteNonQueryAsync();
                     SqlConnection.Close();
-
                     return true;
                 }
             }

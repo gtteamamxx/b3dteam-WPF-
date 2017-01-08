@@ -42,10 +42,20 @@ namespace b3dteam
 
             this.Loaded += async (a, b) =>
             {
-                if(!await Network.IsInternetAvailable())
+            ret:
+
+                if (!await Network.IsInternetAvailable())
                 {
-                    MessageBox.Show("Before using this app, you must have internet connection! [pinging google.com failed]");
-                    this.Close();
+                    var clickedButton = MessageBox.Show("Before using this app, you must have internet connection! [pinging google.com failed]" + Environment.NewLine + "Click \"OK\" to retry.", "Information", MessageBoxButton.OKCancel);
+
+                    if (clickedButton == MessageBoxResult.OK)
+                    {
+                        goto ret;
+                    }
+                    else
+                    {
+                        this.Close();
+                    }
                 }
 
                 var ball3dExePath = Properties.Settings.Default.Ball3DExePath;
@@ -137,12 +147,12 @@ namespace b3dteam
                 AskUserForStatus();
                 return;
             }
-            else if((text_Info.Content as string).Contains("There was"))
+            else if ((text_Info.Content as string).Contains("There was"))
             {
                 Run(Ball3DStatus.ClientStatus);
                 return;
             }
-            else if((text_Info.Content as string).Contains("account"))
+            else if ((text_Info.Content as string).Contains("account"))
             {
                 Run(Ball3DStatus.ClientStatus);
                 return;
@@ -262,9 +272,9 @@ namespace b3dteam
             else if (Properties.Settings.Default.userid != -1 && Properties.Settings.Default.autologin == true)
             {
                 ClientUser = new helper.User(Properties.Settings.Default.userid,
-                    Properties.Settings.Default.login, Properties.Settings.Default.password, 
-                    Properties.Settings.Default.email, Properties.Settings.Default.lastactivity, 
-                    Properties.Settings.Default.regtime,Properties.Settings.Default.usertype);
+                    Properties.Settings.Default.login, Properties.Settings.Default.password,
+                    Properties.Settings.Default.email, Properties.Settings.Default.lastactivity,
+                    Properties.Settings.Default.regtime, Properties.Settings.Default.usertype);
 
                 return true;
             }
@@ -296,10 +306,26 @@ namespace b3dteam
             }
         }
 
+        private bool _Ball3DAppClosedSubscribed = false;
         private void ShowApplication()
         {
             b3dteam_app.MainWindow mw = b3dteam_app.MainWindow.gui == null ? new b3dteam_app.MainWindow() : b3dteam_app.MainWindow.gui;
-            mw.Show();
+
+            if (!_Ball3DAppClosedSubscribed)
+            {
+                mw.Closed += (s, e) =>
+                {
+                    b3dteam_app.MainWindow.gui = null;
+
+                    _Ball3DAppClosedSubscribed = false;
+                    (myNotifyIcon.ContextMenu.Items[0] as MenuItem).IsEnabled = true;
+                };
+            }
+
+            if (mw != null)
+            {
+                mw.Show();
+            }
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -313,7 +339,7 @@ namespace b3dteam
         {
             Ball3DStatus.ClientStatus = helper.SQLManager.Ball3D_Status.Status_Offine;
         }
-            
+
         private void ContextMenu_exitApplication_Click(object sender, RoutedEventArgs e)
         {
             this.Close();

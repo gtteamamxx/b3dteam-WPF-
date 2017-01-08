@@ -27,13 +27,13 @@ namespace b3dteam.View
             checkbox_AutoLogin.IsChecked = Properties.Settings.Default.autologin;
             checkbox_Rememberme.IsChecked = Properties.Settings.Default.rememberme;
 
-            if(checkbox_AutoLogin.IsChecked == true)
+            if (checkbox_AutoLogin.IsChecked == true)
             {
                 checkbox_Rememberme.IsChecked = true;
                 checkbox_Rememberme.IsEnabled = false;
             }
 
-            if(checkbox_Rememberme.IsChecked == true)
+            if (checkbox_Rememberme.IsChecked == true)
             {
                 textbox_Login.Text = Properties.Settings.Default.login;
                 textbox_Password.Password = Properties.Settings.Default.password;
@@ -49,8 +49,8 @@ namespace b3dteam.View
 
             checkbox_AutoLogin.Checked += (s, e) =>
             {
-                 checkbox_Rememberme.IsChecked = true;
-                 checkbox_Rememberme.IsEnabled = false;
+                checkbox_Rememberme.IsChecked = true;
+                checkbox_Rememberme.IsEnabled = false;
 
                 Properties.Settings.Default.autologin = true;
                 Properties.Settings.Default.Save();
@@ -73,7 +73,7 @@ namespace b3dteam.View
 
             this.KeyDown += (s, e) =>
             {
-                if(e.Key == Key.Enter || e.Key == Key.Space)
+                if (e.Key == Key.Enter || e.Key == Key.Space)
                 {
                     button_Login_Click(null, null);
                 }

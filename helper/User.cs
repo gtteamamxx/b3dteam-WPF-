@@ -9,7 +9,10 @@ namespace helper
     public class User
     {
         public static User _ClientUser;
+        public static SQLManager.Ball3D_Status _ClientStatus;
+        
         public static User ClientUser { get { return _ClientUser; } set { _ClientUser = value; } }
+        public static SQLManager.Ball3D_Status ClientStatus { get { return _ClientStatus; } set { _ClientStatus = value; } }
 
         public int userid { get; set; }
         public string login { get; set; }
@@ -29,7 +32,6 @@ namespace helper
 
             ClientUser = this;
         }
-
         public User(int userid, string login, string password, string email, int usertype)
         {
             _setUser(userid, login, password, email, usertype);

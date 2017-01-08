@@ -5,9 +5,59 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:b3dteam_app"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="800">
+        Title="MainWindow" 
+        Height="600" 
+        Width="800">
     
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
         
+        <DockPanel>
+            <Menu DockPanel.Dock="Top">
+                <MenuItem Header="_File">
+                    <MenuItem Header="_Options"
+                              Click="Menu_File_Options_Click" />
+                    <Separator></Separator>
+                    <MenuItem Header="_Hide app"
+                              Click="Menu_File_HideApp_Click "/>
+                    <MenuItem Header="_Exit app (Offine)"
+                              Click="Menu_File_ExitApp_Click" />
+                </MenuItem>
+
+                <MenuItem Header="_Status">
+                    <MenuItem Header="_Set me online"
+                              Click="Menu_Status_Click" />
+                    <MenuItem Header="_Set me offine"
+                              Click="Menu_Status_Click"/>
+                </MenuItem>
+
+            </Menu>
+
+        </DockPanel>
+
+        <Grid Grid.Row="1"> 
+            <TabControl>
+                <TabItem Name="tab_Teams"
+                         Header="Teams">
+                </TabItem>
+                <TabItem Name="tab_Users"
+                         Header="Users">
+                </TabItem>
+
+                <TabItem Name="tab_Events"
+                         Header="Events">
+                </TabItem>
+                <TabItem Name="tab_Informations"
+                         Header="Informations">
+                </TabItem>
+
+                <TabItem Name="tab_Chat"
+                         Header="Chat">
+                </TabItem>
+            </TabControl>
+        </Grid> 
     </Grid>
 </Window>

@@ -31,16 +31,44 @@ namespace b3dteam_app
             this.Loaded += MainWindow_Loaded;
         }
 
+        private void UpdateTitle()
+        {
+            this.Title = "Ball3D Team App - Logged as " + helper.User.ClientUser.login + " - " + (helper.User.ClientStatus == helper.SQLManager.Ball3D_Status.Status_Offine ? "offine" : "online");
+
+        }
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             if(helper.User.ClientUser == null)
             {
-                //bad user
+                this.Title = "Ball3D Team App - Bad user";
+                MessageBox.Show("Before using it, you have to login!");
+                this.Close();
             }
             else
             {
-
+                UpdateTitle();
             }
+        }
+
+        private void Menu_File_HideApp_Click(object sender, RoutedEventArgs e)
+        {
+            this.Hide();
+        }
+
+        private void Menu_File_ExitApp_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        private void Menu_Status_Click(object sender, RoutedEventArgs e)
+        {
+            helper.User.ClientStatus = ((sender as MenuItem).Header as string).Contains("online") ? helper.SQLManager.Ball3D_Status.Status_Online : helper.SQLManager.Ball3D_Status.Status_Offine;
+            UpdateTitle();
+        }
+
+        private void Menu_File_Options_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
