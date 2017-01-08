@@ -60,7 +60,7 @@ namespace b3dteam.View
             checkbox_Rememberme.Unchecked += (s, e) =>
             {
                 Properties.Settings.Default.rememberme = false;
-                MainWindow.ClientUser.Reset();
+                Model.Extension.ResetUser(MainWindow.ClientUser);
             };
             checkbox_Rememberme.Checked += (s, e) =>
             {
@@ -77,23 +77,30 @@ namespace b3dteam.View
 
         private async void button_Login_Click(object sender, RoutedEventArgs e)
         {
-            var loginSuccesful = await Model.SQLManager.LoginUser(textbox_Login.Text, textbox_Password.Password);
+            var pass = Properties.Settings.Default.rememberme == true && textbox_Password.Password.Length > 16 ? Properties.Settings.Default.password : helper.Cryptography.Sha256(textbox_Password.Password);
 
-            switch(loginSuccesful)
+            var loginTuple = await helper.SQLManager.LoginUser(textbox_Login.Text, pass);
+
+            helper.SQLManager.LoginAccountStatus loginAccountStatus = loginTuple.Item1;
+
+            switch (loginAccountStatus)
             {
-                case Model.SQLManager.LoginAccountStatus.Bad_Authorization:
+                case helper.SQLManager.LoginAccountStatus.Bad_Authorization:
                     MessageBox.Show("Login or password are incorrect", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     break;
 
-                case Model.SQLManager.LoginAccountStatus.Succesful:
+                case helper.SQLManager.LoginAccountStatus.Succesful:
+                    var user = loginTuple.Item2;
+                    Model.Extension.SaveUser(user);
+                    MainWindow.ClientUser = user;
                     LoginWindow.gui.Close();
                     break;
 
-                case Model.SQLManager.LoginAccountStatus.Failed:
+                case helper.SQLManager.LoginAccountStatus.Failed:
                     MessageBox.Show("There was problem with login. Try again later", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     break;
 
-                case Model.SQLManager.LoginAccountStatus.Account_Not_Activated:
+                case helper.SQLManager.LoginAccountStatus.Account_Not_Activated:
                     MessageBox.Show("This account is not activated yet." + Environment.NewLine + "Write to grs4_98@o2.pl, or on Gadu-Gadu 38862128", "Error", MessageBoxButton.OK, MessageBoxImage.Stop);
                     break;
             }

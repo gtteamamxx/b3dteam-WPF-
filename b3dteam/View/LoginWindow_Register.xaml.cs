@@ -57,13 +57,13 @@ namespace b3dteam.View
 
         private async void button_Register_Click(object sender, RoutedEventArgs e)
         {
-            if(_lastClickedTime > Model.SQLManager.GetTimeStamp())
+            if(_lastClickedTime > helper.SQLManager.GetTimeStamp())
             {
                 textblock_Info.Text = "You have to wait a while, before pressing 'Register' button!";
                 textblock_Info.Foreground = new SolidColorBrush(Colors.Red);
             }
 
-            _lastClickedTime = Model.SQLManager.GetTimeStamp()+120;
+            _lastClickedTime = helper.SQLManager.GetTimeStamp()+120;
             Color red = new Color() { R = 255, A = 50 };
             Color green = new Color() { G = 255, A = 50 };
 
@@ -85,22 +85,22 @@ namespace b3dteam.View
             
             button_Register.IsEnabled = false;
 
-            Model.SQLManager.RegisterAccountStatus result = await Model.SQLManager.RegisterNewUser(textbox_Login.Text, textbox_Password.Password, textbox_Email.Text);
+            helper.SQLManager.RegisterAccountStatus result = await helper.SQLManager.RegisterNewUser(Model.Ball3DStatus.ClientStatus, textbox_Login.Text, textbox_Password.Password, textbox_Email.Text);
 
             switch (result)
             {
-                case Model.SQLManager.RegisterAccountStatus.Email_Alerady_Exists:
+                case helper.SQLManager.RegisterAccountStatus.Email_Alerady_Exists:
                     textblock_Info.Text = "E-mail is in use.";
                     textbox_Email.Background = new SolidColorBrush(red);
                     break;
 
-                case Model.SQLManager.RegisterAccountStatus.Login_Alerady_Exists:
+                case helper.SQLManager.RegisterAccountStatus.Login_Alerady_Exists:
                     textblock_Info.Text = "Login is in use. You think, that someone stolen you this nickname? Write to grs4_98@o2.pl";
                     textblock_Info.Foreground = new SolidColorBrush(Colors.Red);
                     textbox_Login.Background = new SolidColorBrush(red);
                     break;
 
-                case Model.SQLManager.RegisterAccountStatus.Succesful:
+                case helper.SQLManager.RegisterAccountStatus.Succesful:
                     textblock_Info.Text = "Your account has been created succesfully.";
                     button_Register.IsEnabled = false;
                     textblock_Info.Foreground = new SolidColorBrush(Colors.Green);
@@ -120,7 +120,7 @@ namespace b3dteam.View
                     LoginWindow.gui.ShowMainView();
                     break;
 
-                case Model.SQLManager.RegisterAccountStatus.Failed:
+                case helper.SQLManager.RegisterAccountStatus.Failed:
                     textblock_Info.Text = "There's problem with register a new account. Try again later";
                     textblock_Info.Foreground = new SolidColorBrush(Colors.Red);
                     break;

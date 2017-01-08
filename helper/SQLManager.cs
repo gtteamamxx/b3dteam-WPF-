@@ -1,5 +1,4 @@
-﻿using MySql.Data.MySqlClient;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -8,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace b3dteam.Model
+namespace helper
 {
     public static class SQLManager
     {
@@ -27,6 +26,13 @@ namespace b3dteam.Model
             Failed,
             Succesful
         }
+
+        public enum Ball3D_Status
+        {
+            Status_Offine = 0,
+            Status_Online
+        }
+
         public static SqlConnection SqlConnection;
 
         public static async Task<bool> ConnectToDatabase()
@@ -54,15 +60,16 @@ namespace b3dteam.Model
                         return false;
                     }
                 }
-                catch (Exception ex)
+                catch
                 {
                     _sqlConnection.Close();
-                    MessageBox.Show("Error while connecting to server" + Environment.NewLine + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);                    return false;
+                    System.Windows.MessageBox.Show("Error while connecting to server", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return false;
                 }
             }
         }
 
-        public static async Task<RegisterAccountStatus> RegisterNewUser(string login, string password, string email)
+        public static async Task<RegisterAccountStatus> RegisterNewUser(Ball3D_Status status, string login, string password, string email)
         {
             bool? userExists = await CheckIfUserExists(login);
             bool? emailExists = await CheckIfEmailWExists(email);
@@ -75,7 +82,7 @@ namespace b3dteam.Model
             {
                 return RegisterAccountStatus.Email_Alerady_Exists;
             }
-            else if((await _RegisterNewUser(login, password, email)) == false || userExists == null || emailExists == null)
+            else if((await _RegisterNewUser(status, login, password, email)) == false || userExists == null || emailExists == null)
             {
                 return RegisterAccountStatus.Failed;
             }
@@ -83,9 +90,9 @@ namespace b3dteam.Model
             return RegisterAccountStatus.Succesful;
         }
 
-        private static async Task<bool?> _RegisterNewUser(string login, string password, string email)
+        private static async Task<bool?> _RegisterNewUser(Ball3D_Status status, string login, string password, string email)
         {
-            string query = $"INSERT INTO USERS(login, password, email, usertype, lastactivity, regtime) VALUES('{login}', '{Cryptography.Sha256(password)}', '{email}', 0, {(Ball3DStatus.ClientStatus == Ball3DStatus.Ball3D_Status.Status_Offine ? 0 : GetTimeStamp())}, {GetTimeStamp()});";
+            string query = $"INSERT INTO USERS(login, password, email, usertype, lastactivity, regtime) VALUES('{login}', '{Cryptography.Sha256(password)}', '{email}', 0, {(status == Ball3D_Status.Status_Offine ? 0 : GetTimeStamp())}, {GetTimeStamp()});";
 
             try
             {
@@ -97,20 +104,18 @@ namespace b3dteam.Model
                     return true;
                 }
             }
-            catch(Exception ex)
+            catch
             {
                 SqlConnection.Close();
-                MessageBox.Show("There was problem with registering an user." + Environment.NewLine + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show("There was problem with registering an user.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
             
         }
 
-        public static async Task<LoginAccountStatus?> LoginUser(string login, string password)
+        public static async Task<Tuple<LoginAccountStatus, User>> LoginUser(string login, string password)
         {
-            var pass = Properties.Settings.Default.rememberme == true && password.Length > 16 ? Properties.Settings.Default.password : Cryptography.Sha256(password);
-
-            string query = $"SELECT * FROM USERS WHERE login = '{login}' AND password = '{pass}';";
+            string query = $"SELECT * FROM USERS WHERE login = '{login}' AND password = '{password}';";
 
             try
             {
@@ -136,26 +141,23 @@ namespace b3dteam.Model
 
                             if (_usertype == 0)
                             {
-                                return LoginAccountStatus.Account_Not_Activated;
+                                return new Tuple<LoginAccountStatus, User>(LoginAccountStatus.Account_Not_Activated, null);
                             }
 
-                            MainWindow.ClientUser = new User(_userid, _login, _password, _email, _lastactivity, _regtime, _usertype);
-                            MainWindow.ClientUser.Save();
-
-                            return LoginAccountStatus.Succesful;
+                            return new Tuple<LoginAccountStatus, User>(LoginAccountStatus.Succesful, new User(_userid, _login, _password, _email, _lastactivity, _regtime, _usertype));
                         }
 
                         SqlConnection.Close();
 
-                        return LoginAccountStatus.Bad_Authorization;
+                        return new Tuple<LoginAccountStatus, User>(LoginAccountStatus.Bad_Authorization, null);
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 SqlConnection.Close();
-                MessageBox.Show("There was problem with login." + Environment.NewLine + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return LoginAccountStatus.Failed;
+                MessageBox.Show("There was problem with login.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return new Tuple<LoginAccountStatus, User>(LoginAccountStatus.Failed, null);
             }
         }
 
@@ -174,10 +176,10 @@ namespace b3dteam.Model
                     return (string)result == login;
                 }
             }
-            catch(Exception ex)
+            catch
             {
                 SqlConnection.Close();
-                MessageBox.Show("There was problem with registering an user." + Environment.NewLine + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("There was problem with registering an user.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
         }
@@ -197,17 +199,17 @@ namespace b3dteam.Model
                     return (string)result == email;
                 }
             }
-            catch(Exception ex)
+            catch
             {
                 SqlConnection.Close();
-                MessageBox.Show("There was problem with registering an user." + Environment.NewLine + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("There was problem with registering an user.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
         }
 
-        public static async Task<bool> UpdateStatus(Ball3DStatus.Ball3D_Status status, int userid)
+        public static async Task<bool> UpdateStatus(Ball3D_Status status, int userid)
         {
-            if(status == Ball3DStatus.Ball3D_Status.Status_Offine)
+            if(status == Ball3D_Status.Status_Offine)
             {
                 return true;
             }

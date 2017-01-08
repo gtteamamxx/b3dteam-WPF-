@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "b3dteam launcher", "b3dteam
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "b3dteam app", "b3dteam app\b3dteam app.csproj", "{D2CEFF8F-EDCD-401B-9A72-18A4556689BC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "helper", "helper\helper.csproj", "{AD318E3E-47E8-42D6-BF70-D2EB1246C98C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{D2CEFF8F-EDCD-401B-9A72-18A4556689BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D2CEFF8F-EDCD-401B-9A72-18A4556689BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D2CEFF8F-EDCD-401B-9A72-18A4556689BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD318E3E-47E8-42D6-BF70-D2EB1246C98C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD318E3E-47E8-42D6-BF70-D2EB1246C98C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD318E3E-47E8-42D6-BF70-D2EB1246C98C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD318E3E-47E8-42D6-BF70-D2EB1246C98C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

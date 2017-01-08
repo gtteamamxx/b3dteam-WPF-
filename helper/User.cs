@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace b3dteam.Model
+namespace helper
 {
     public class User
     {
@@ -39,32 +39,6 @@ namespace b3dteam.Model
             _setUser(userid, login, password, email, usertype);
             this.lastactivity = lastactivity;
             this.regtime = regtime;
-        }
-
-        public void Save()
-        {
-            Properties.Settings.Default.email = email;
-            Properties.Settings.Default.login = login;
-            Properties.Settings.Default.password = password;
-            Properties.Settings.Default.userid = userid;
-            Properties.Settings.Default.usertype = usertype;
-            Properties.Settings.Default.regtime = regtime;
-            Properties.Settings.Default.lastactivity = lastactivity;
-
-            Properties.Settings.Default.Save();
-        }
-
-        public void Reset()
-        {
-            Properties.Settings.Default.email = "";
-            Properties.Settings.Default.login = "";
-            Properties.Settings.Default.password = "";
-            Properties.Settings.Default.userid = -1;
-            Properties.Settings.Default.usertype = -1;
-            Properties.Settings.Default.regtime = 0;
-            Properties.Settings.Default.lastactivity = 0;
-
-            Properties.Settings.Default.Save();
         }
     }
 }

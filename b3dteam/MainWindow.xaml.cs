@@ -27,7 +27,9 @@ namespace b3dteam
         public bool IsBall3DFileCorrect => Ball3DPath.Contains(".exe");
 
         public Ball3DProcess Ball3DGameProcess;
-        public static User ClientUser;
+        public static helper.User ClientUser;
+
+        public static bool _RunOnlyApp = false;
 
         public MainWindow()
         {
@@ -76,11 +78,11 @@ namespace b3dteam
         {
             if (File.Exists(Properties.Settings.Default.Ball3DExePath))
             {
-                this.Height = 150;
-
                 button_statusOffine.Visibility = Visibility.Visible;
                 button_statusOnline.Visibility = Visibility.Visible;
                 button_selectFile.Visibility = Visibility.Collapsed;
+                button_RunApp_Offine.Visibility = Visibility.Visible;
+                button_RunApp_Online.Visibility = Visibility.Visible;
 
                 text_Info.Content = "Do you want to set status to 'online'?";
             }
@@ -94,6 +96,8 @@ namespace b3dteam
         {
             button_statusOffine.Visibility = Visibility.Collapsed;
             button_statusOnline.Visibility = Visibility.Collapsed;
+            button_RunApp_Offine.Visibility = Visibility.Collapsed;
+            button_RunApp_Online.Visibility = Visibility.Collapsed;
             button_selectFile.Visibility = Visibility.Visible;
 
             text_Info.Content = "Waiting for select 'Ball 3D.exe'...";
@@ -127,12 +131,12 @@ namespace b3dteam
             }
             else if((text_Info.Content as string).Contains("There was"))
             {
-                RunGameWithStatus(Ball3DStatus.ClientStatus);
+                Run(Ball3DStatus.ClientStatus);
                 return;
             }
             else if((text_Info.Content as string).Contains("account"))
             {
-                RunGameWithStatus(Ball3DStatus.ClientStatus);
+                Run(Ball3DStatus.ClientStatus);
                 return;
             }
 
@@ -154,21 +158,23 @@ namespace b3dteam
 
         private void button_statusOnline_Click(object sender, RoutedEventArgs e)
         {
-            RunGameWithStatus(Ball3DStatus.Ball3D_Status.Status_Online);
+            Run(helper.SQLManager.Ball3D_Status.Status_Online);
         }
 
         private void button_statusOffine_Click(object sender, RoutedEventArgs e)
         {
-            RunGameWithStatus(Ball3DStatus.Ball3D_Status.Status_Offine);
+            Run(helper.SQLManager.Ball3D_Status.Status_Offine);
         }
 
-        public async void RunGameWithStatus(Ball3DStatus.Ball3D_Status status)
+        public async void Run(helper.SQLManager.Ball3D_Status status)
         {
             Ball3DStatus.ClientStatus = status;
 
             button_statusOffine.Visibility = Visibility.Collapsed;
             button_statusOnline.Visibility = Visibility.Collapsed;
             button_selectFile.Visibility = Visibility.Collapsed;
+            button_RunApp_Offine.Visibility = Visibility.Collapsed;
+            button_RunApp_Online.Visibility = Visibility.Collapsed;
 
             if (!(await CheckInternetConnection()) || !(await CheckSQLConnection()) || !CheckUserLogin())
             {
@@ -179,17 +185,23 @@ namespace b3dteam
 
             this.Hide();
 
-            if (status == Ball3DStatus.Ball3D_Status.Status_Online)
+            if (status == helper.SQLManager.Ball3D_Status.Status_Online)
             {
-                Ball3DStatus.UpdateStatus(Ball3DStatus.Ball3D_Status.Status_Online);
+                Ball3DStatus.UpdateStatus(helper.SQLManager.Ball3D_Status.Status_Online);
             }
 
-            if (Ball3DGameProcess.IsBall3DProcessRunning())
+            if (status == helper.SQLManager.Ball3D_Status.Status_Online)
             {
-                if (status == Ball3DStatus.Ball3D_Status.Status_Online)
-                {
-                    Ball3DGameProcess.CheckBall3DProcessAndSendStatus();
-                }
+                Ball3DGameProcess.CheckBall3DProcessAndSendStatus();
+            }
+
+            if (_RunOnlyApp)
+            {
+                b3dteam_app.MainWindow a = new b3dteam_app.MainWindow();
+                a.Show();
+            }
+            else if (Ball3DGameProcess.IsBall3DProcessRunning())
+            {
                 return;
             }
             else
@@ -217,7 +229,7 @@ namespace b3dteam
         {
             text_Info.Content = "Checking database connection...";
 
-            if (!(await SQLManager.ConnectToDatabase()))
+            if (!(await helper.SQLManager.ConnectToDatabase()))
             {
                 text_Info.Content = "There was problem with connection to database." + Environment.NewLine + "Write to grs4_98@o2.pl";
                 button_selectFile.Visibility = Visibility.Visible;
@@ -231,7 +243,7 @@ namespace b3dteam
 
         private bool _LoginWindowClosedEventSubscribed = false;
 
-        private bool CheckUserLogin()
+        public bool CheckUserLogin()
         {
             text_Info.Content = "Checking user...";
 
@@ -239,9 +251,10 @@ namespace b3dteam
             {
                 return true;
             }
+
             else if (Properties.Settings.Default.userid != -1 && Properties.Settings.Default.autologin == true)
             {
-                ClientUser = new User(Properties.Settings.Default.userid,
+                ClientUser = new helper.User(Properties.Settings.Default.userid,
                     Properties.Settings.Default.login, Properties.Settings.Default.password, 
                     Properties.Settings.Default.email, Properties.Settings.Default.lastactivity, 
                     Properties.Settings.Default.regtime,Properties.Settings.Default.usertype);
@@ -264,7 +277,7 @@ namespace b3dteam
                     {
                         if (ClientUser != null)
                         {
-                            RunGameWithStatus(Ball3DStatus.ClientStatus);
+                            Run(Ball3DStatus.ClientStatus);
                         }
                     };
                 }
@@ -279,17 +292,29 @@ namespace b3dteam
 
         private void ContextMenu_statusOnline(object sender, RoutedEventArgs e)
         {
-            Ball3DStatus.ClientStatus = Ball3DStatus.Ball3D_Status.Status_Online;
+            Ball3DStatus.ClientStatus = helper.SQLManager.Ball3D_Status.Status_Online;
         }
 
         private void ContextMenu_statusOffine(object sender, RoutedEventArgs e)
         {
-            Ball3DStatus.ClientStatus = Ball3DStatus.Ball3D_Status.Status_Offine;
+            Ball3DStatus.ClientStatus = helper.SQLManager.Ball3D_Status.Status_Offine;
         }
             
         private void ContextMenu_exitApplication(object sender, RoutedEventArgs e)
         {
             this.Close();
+        }
+
+        private void button_RunApp_Offine_Click(object sender, RoutedEventArgs e)
+        {
+            _RunOnlyApp = true;
+            Run(helper.SQLManager.Ball3D_Status.Status_Offine);
+        }
+
+        private void button_RunApp_Online_Click(object sender, RoutedEventArgs e)
+        {
+            _RunOnlyApp = true;
+            Run(helper.SQLManager.Ball3D_Status.Status_Online);
         }
     }
 }

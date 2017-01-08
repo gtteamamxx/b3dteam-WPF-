@@ -32,9 +32,9 @@ namespace b3dteam.Model
 
                 if (IsBall3DProcessRunning())
                 {
-                    if (Ball3DStatus.ClientStatus == Ball3DStatus.Ball3D_Status.Status_Online)
+                    if (Ball3DStatus.ClientStatus == helper.SQLManager.Ball3D_Status.Status_Online)
                     {
-                        Ball3DStatus.UpdateStatus(Ball3DStatus.Ball3D_Status.Status_Online);
+                        Ball3DStatus.UpdateStatus(helper.SQLManager.Ball3D_Status.Status_Online);
                     }
                 }
                 else

@@ -28,7 +28,7 @@ namespace b3dteam_app
             this.Loaded += MainWindow_Loaded;
         }
 
-        private  void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
 
         }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace b3dteam.Model
+namespace helper
 {
     public static class Cryptography
     {

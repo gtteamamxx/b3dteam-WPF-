@@ -73,8 +73,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Model\Extension.cs" />
     <Compile Include="Model\NotyficationManager.cs" />
-    <Compile Include="Model\User.cs" />
     <Compile Include="View\LoginWindow.xaml.cs">
       <DependentUpon>LoginWindow.xaml</DependentUpon>
     </Compile>
@@ -96,7 +96,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\Cryptography.cs" />
     <Compile Include="View\FilePickerWindow.xaml.cs">
       <DependentUpon>FilePickerWindow.xaml</DependentUpon>
     </Compile>
@@ -121,7 +120,6 @@
     <Compile Include="Model\Ball3DProcess.cs" />
     <Compile Include="Model\Ball3DStatus.cs" />
     <Compile Include="Model\Network.cs" />
-    <Compile Include="Model\SQLManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -151,6 +149,16 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\b3dteam app\b3dteam app.csproj">
+      <Project>{d2ceff8f-edcd-401b-9a72-18a4556689bc}</Project>
+      <Name>b3dteam app</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\helper\helper.csproj">
+      <Project>{ad318e3e-47e8-42d6-bf70-d2eb1246c98c}</Project>
+      <Name>helper</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
