@@ -56,7 +56,15 @@ namespace b3dteam.Model
 
         public void Reset()
         {
-            Properties.Settings.Default.Reset();
+            Properties.Settings.Default.email = "";
+            Properties.Settings.Default.login = "";
+            Properties.Settings.Default.password = "";
+            Properties.Settings.Default.userid = -1;
+            Properties.Settings.Default.usertype = -1;
+            Properties.Settings.Default.regtime = 0;
+            Properties.Settings.Default.lastactivity = 0;
+
+            Properties.Settings.Default.Save();
         }
     }
 }

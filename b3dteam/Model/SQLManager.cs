@@ -31,9 +31,11 @@ namespace b3dteam.Model
 
         public static async Task<bool> ConnectToDatabase()
         {
+            
             using (var _sqlConnection = new SqlConnection())
             {
                 SqlConnectionStringBuilder sqlsb = new SqlConnectionStringBuilder();
+
 
 
                 _sqlConnection.ConnectionString = sqlsb.ConnectionString;
@@ -51,11 +53,10 @@ namespace b3dteam.Model
                     {
                         return false;
                     }
-
-                    
                 }
                 catch (Exception ex)
                 {
+                    _sqlConnection.Close();
                     MessageBox.Show("Error while connecting to server" + Environment.NewLine + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);                    return false;
                 }
             }
@@ -84,7 +85,7 @@ namespace b3dteam.Model
 
         private static async Task<bool?> _RegisterNewUser(string login, string password, string email)
         {
-            string query = $"INSERT INTO USERS(login, password, email, usertype, lastactivity) VALUES('{login}', '{Cryptography.Sha256(password)}', '{email}', 0, {(Ball3DStatus.ClientStatus == Ball3DStatus.Ball3D_Status.Status_Offine ? 0 : TimeSpan.FromTicks(0).Ticks)});";
+            string query = $"INSERT INTO USERS(login, password, email, usertype, lastactivity, regtime) VALUES('{login}', '{Cryptography.Sha256(password)}', '{email}', 0, {(Ball3DStatus.ClientStatus == Ball3DStatus.Ball3D_Status.Status_Offine ? 0 : GetTimeStamp())}, {GetTimeStamp()});";
 
             try
             {
@@ -98,6 +99,7 @@ namespace b3dteam.Model
             }
             catch(Exception ex)
             {
+                SqlConnection.Close();
                 MessageBox.Show("There was problem with registering an user." + Environment.NewLine + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
@@ -151,6 +153,7 @@ namespace b3dteam.Model
             }
             catch (Exception ex)
             {
+                SqlConnection.Close();
                 MessageBox.Show("There was problem with login." + Environment.NewLine + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return LoginAccountStatus.Failed;
             }
@@ -173,6 +176,7 @@ namespace b3dteam.Model
             }
             catch(Exception ex)
             {
+                SqlConnection.Close();
                 MessageBox.Show("There was problem with registering an user." + Environment.NewLine + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
@@ -195,17 +199,42 @@ namespace b3dteam.Model
             }
             catch(Exception ex)
             {
+                SqlConnection.Close();
                 MessageBox.Show("There was problem with registering an user." + Environment.NewLine + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
         }
 
-        public static bool UpdateStatus(Ball3DStatus.Ball3D_Status status)
+        public static async Task<bool> UpdateStatus(Ball3DStatus.Ball3D_Status status, int userid)
         {
-            string query = "UPDATE `USERS` SET lastactivity = " + TimeSpan.FromTicks(0).Ticks + " WHERE `userid` = " + ";";//userid
+            if(status == Ball3DStatus.Ball3D_Status.Status_Offine)
+            {
+                return true;
+            }
 
-            using (var coomand = new SqlCommand())
-            return true;
+            string query = "UPDATE USERS SET lastactivity = " + GetTimeStamp() + " WHERE userid = " + userid + ";";
+
+            try
+            {
+                using (var command = new SqlCommand(query, SqlConnection))
+                {
+                    await SqlConnection.OpenAsync();
+                    await command.ExecuteNonQueryAsync();
+                    SqlConnection.Close();
+
+                    return true;
+                }
+            }
+            catch
+            {
+                SqlConnection.Close();
+                return false;
+            }
+        }
+
+        public static int GetTimeStamp()
+        {
+            return (int)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
         }
     }
 }

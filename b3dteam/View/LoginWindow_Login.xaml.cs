@@ -39,21 +39,32 @@ namespace b3dteam.View
                 textbox_Password.Password = Properties.Settings.Default.password;
             }
 
+            /////////////////////////////////////////
+            checkbox_AutoLogin.Unchecked += (s, e) =>
+            {
+                Properties.Settings.Default.autologin = false;
+                Properties.Settings.Default.Save();
+                checkbox_Rememberme.IsEnabled = true;
+            };
+
             checkbox_AutoLogin.Checked += (s, e) =>
             {
-                if(checkbox_AutoLogin.IsChecked == true)
-                {
-                    checkbox_Rememberme.IsChecked = true;
-                    checkbox_Rememberme.IsEnabled = false;
-                }
+                 checkbox_Rememberme.IsChecked = true;
+                 checkbox_Rememberme.IsEnabled = false;
 
-                Properties.Settings.Default.autologin = checkbox_AutoLogin.IsChecked == true ? true : false;
+                Properties.Settings.Default.autologin = true;
                 Properties.Settings.Default.Save();
             };
 
+            //////////////////////////////////////////
+            checkbox_Rememberme.Unchecked += (s, e) =>
+            {
+                Properties.Settings.Default.rememberme = false;
+                MainWindow.ClientUser.Reset();
+            };
             checkbox_Rememberme.Checked += (s, e) =>
             {
-                Properties.Settings.Default.rememberme = checkbox_Rememberme.IsChecked == true ? true : false;
+                Properties.Settings.Default.rememberme = true;
                 Properties.Settings.Default.Save();
             };
             

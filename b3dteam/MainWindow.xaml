@@ -15,7 +15,7 @@
                 <MenuItem Header="Set status to Online"
                           Click="ContextMenu_statusOnline"/>
                 <MenuItem Header="Set status to Offine"
-                          Click="ContextMenu_statusOnline"/>
+                          Click="ContextMenu_statusOffine"/>
                 <Separator/>
                 <MenuItem Header="Exit (Offine)"
                           Click="ContextMenu_exitApplication"/>
@@ -27,7 +27,7 @@
                         MenuActivation="LeftOrRightClick"
                         IconSource="/Images/icon.ico"
                         ContextMenu="{StaticResource TaskBarContextMenu}"
-                        PopupActivation="DoubleClick" />
+                        PopupActivation="DoubleClick"/>
 
         <Label Name="text_Info"
                Foreground="Green"

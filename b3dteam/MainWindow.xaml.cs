@@ -10,7 +10,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -35,6 +34,7 @@ namespace b3dteam
             InitializeComponent();
 
             Ball3DGameProcess = new Ball3DProcess(this);
+            NotyficationManager.SetInstanceOfMainWindow(this);
 
             this.Loaded += (a, b) =>
             {
@@ -50,6 +50,12 @@ namespace b3dteam
                         text_Info.Content = "";
                         SaveBall3DPathAndAskUserForStatus();
                     }
+                    else
+                    {
+                        MessageBox.Show("There is problem with selected Ball3D.exe file. Run application again.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        Properties.Settings.Default.Reset();
+                        this.Close();
+                    }
                 }
                 else
                 {
@@ -57,6 +63,7 @@ namespace b3dteam
                 }
             };
         }
+
         public void SaveBall3DPathAndAskUserForStatus()
         {
             Properties.Settings.Default.Ball3DExePath = @Ball3DPath;
@@ -137,6 +144,12 @@ namespace b3dteam
                 text_Info.Content = "";
                 SaveBall3DPathAndAskUserForStatus();
             }
+            else
+            {
+                MessageBox.Show("There is problem with selected Ball3D.exe file. Run application again.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Properties.Settings.Default.Reset();
+                this.Close();
+            }
         }
 
         private void button_statusOnline_Click(object sender, RoutedEventArgs e)
@@ -166,21 +179,23 @@ namespace b3dteam
 
             this.Hide();
 
-            if(status == Ball3DStatus.Ball3D_Status.Status_Online)
+            if (status == Ball3DStatus.Ball3D_Status.Status_Online)
             {
                 Ball3DStatus.UpdateStatus(Ball3DStatus.Ball3D_Status.Status_Online);
             }
 
             if (Ball3DGameProcess.IsBall3DProcessRunning())
             {
-                if(status == Ball3DStatus.Ball3D_Status.Status_Online)
+                if (status == Ball3DStatus.Ball3D_Status.Status_Online)
                 {
                     Ball3DGameProcess.CheckBall3DProcessAndSendStatus();
                 }
                 return;
             }
-
-            Ball3DGameProcess.RunGame();
+            else
+            {
+                Ball3DGameProcess.RunGame();
+            }
         }
 
         private async Task<bool> CheckInternetConnection()
@@ -264,7 +279,7 @@ namespace b3dteam
 
         private void ContextMenu_statusOnline(object sender, RoutedEventArgs e)
         {
-            Ball3DStatus.ClientStatus = Ball3DStatus.Ball3D_Status.Status_Offine;
+            Ball3DStatus.ClientStatus = Ball3DStatus.Ball3D_Status.Status_Online;
         }
 
         private void ContextMenu_statusOffine(object sender, RoutedEventArgs e)

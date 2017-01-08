@@ -20,7 +20,7 @@ namespace b3dteam.View
     /// </summary>
     public partial class LoginWindow_Register : UserControl
     {
-        private long _lastClickedTime;
+        private int _lastClickedTime;
 
         private Brush _DefualtTextBoxBackgroundBrush;
 
@@ -57,13 +57,13 @@ namespace b3dteam.View
 
         private async void button_Register_Click(object sender, RoutedEventArgs e)
         {
-            if(_lastClickedTime > TimeSpan.FromTicks(0).Ticks)
+            if(_lastClickedTime > Model.SQLManager.GetTimeStamp())
             {
                 textblock_Info.Text = "You have to wait a while, before pressing 'Register' button!";
                 textblock_Info.Foreground = new SolidColorBrush(Colors.Red);
             }
 
-            _lastClickedTime = TimeSpan.FromSeconds(3).Ticks;
+            _lastClickedTime = Model.SQLManager.GetTimeStamp()+120;
             Color red = new Color() { R = 255, A = 50 };
             Color green = new Color() { G = 255, A = 50 };
 
@@ -112,10 +112,9 @@ namespace b3dteam.View
                     MessageBox.Show("You just created a new account." + Environment.NewLine + Environment.NewLine +
                         "Login: " + textbox_Login.Text + Environment.NewLine +
                         "E-mail: " + textbox_Email.Text + Environment.NewLine + Environment.NewLine +
-                        "(eng)Before login your account must be validated. Write to grs4_98@o2.pl, or on Gadu-Gadu: 38862128 for it." + Environment.NewLine + Environment.NewLine +
-                        "Send me your login, or email addres showed above." + Environment.NewLine +
+                        "(eng)Before login, your account must be validated. Write to grs4_98@o2.pl, or on Gadu-Gadu: 38862128 for it." + Environment.NewLine + Environment.NewLine +
+                        "Send me your login, or email address showed above." + Environment.NewLine +
                         "I'm checking new requests very often, so it's nearly possible, that your account will be available today.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
-
 
                     await Task.Delay(TimeSpan.FromSeconds(2));
                     LoginWindow.gui.ShowMainView();
