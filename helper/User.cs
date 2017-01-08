@@ -8,11 +8,36 @@ namespace helper
 {
     public class User
     {
+        public delegate void _ClientStatusChanged(SQLManager.Ball3D_Status newStatus, SQLManager.Ball3D_Status oldStatus);
+        public static event _ClientStatusChanged OnClientStatusChanged;
+
         public static User _ClientUser;
         public static SQLManager.Ball3D_Status _ClientStatus;
         
-        public static User ClientUser { get { return _ClientUser; } set { _ClientUser = value; } }
-        public static SQLManager.Ball3D_Status ClientStatus { get { return _ClientStatus; } set { _ClientStatus = value; } }
+        public static User ClientUser
+        {
+            get
+            {
+                return _ClientUser;
+            }
+            set
+            {
+                _ClientUser = value;
+            }
+        }
+        public static SQLManager.Ball3D_Status ClientStatus
+        {
+            get
+            {
+                return _ClientStatus;
+            }
+            set
+            {
+                var oldStatus = _ClientStatus;
+                _ClientStatus = value;
+                OnClientStatusChanged?.Invoke(value, oldStatus);
+            }
+        }
 
         public int userid { get; set; }
         public string login { get; set; }
@@ -32,15 +57,18 @@ namespace helper
 
             ClientUser = this;
         }
+
         public User(int userid, string login, string password, string email, int usertype)
         {
             _setUser(userid, login, password, email, usertype);
         }
+
         public User(int userid, string login, string password, string email, int lastactivity, int usertype)
         {
             _setUser(userid, login, password, email, usertype);
             this.lastactivity = lastactivity;
         }
+
         public User(int userid, string login, string password, string email, int lastactivity, int regtime, int usertype)
         {
             _setUser(userid, login, password, email, usertype);

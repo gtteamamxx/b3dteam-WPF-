@@ -9,7 +9,7 @@ namespace b3dteam.Model
 {
     public static class Ball3DStatus
     {
-        public static Ball3D_Status ClientStatus = Ball3D_Status.Status_Offine;
+        public static Ball3D_Status ClientStatus { get { return helper.User.ClientStatus; } set { helper.User.ClientStatus = value; } }
 
         public static async void UpdateStatus(Ball3D_Status status)
         {

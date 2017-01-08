@@ -29,6 +29,11 @@ namespace b3dteam_app
             gui = this;
 
             this.Loaded += MainWindow_Loaded;
+
+            helper.User.OnClientStatusChanged += (n, o) =>
+            {
+                UpdateTitle();
+            };
         }
 
         private void UpdateTitle()
@@ -68,7 +73,8 @@ namespace b3dteam_app
 
         private void Menu_File_Options_Click(object sender, RoutedEventArgs e)
         {
-
+            View.Options optionsWindow = new View.Options();
+            optionsWindow.ShowDialog();
         }
     }
 }

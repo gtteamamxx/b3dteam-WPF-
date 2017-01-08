@@ -208,10 +208,7 @@ namespace b3dteam
                 Ball3DStatus.UpdateStatus(helper.SQLManager.Ball3D_Status.Status_Online);
             }
 
-            if (status == helper.SQLManager.Ball3D_Status.Status_Online)
-            {
-                Ball3DGameProcess.CheckBall3DProcessAndSendStatus();
-            }
+            Ball3DGameProcess.CheckBall3DProcessAndSendStatus();
 
             if (_RunOnlyApp)
             {
@@ -316,7 +313,7 @@ namespace b3dteam
                 mw.Closed += (s, e) =>
                 {
                     b3dteam_app.MainWindow.gui = null;
-
+                    helper.Application.IsAppRunning = false;
                     _Ball3DAppClosedSubscribed = false;
                     (myNotifyIcon.ContextMenu.Items[0] as MenuItem).IsEnabled = true;
                 };
@@ -324,6 +321,7 @@ namespace b3dteam
 
             if (mw != null)
             {
+                helper.Application.IsAppRunning = true;
                 mw.Show();
             }
         }

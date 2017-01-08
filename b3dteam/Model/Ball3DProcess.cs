@@ -30,7 +30,7 @@ namespace b3dteam.Model
             {
                 await Task.Delay(TimeSpan.FromMinutes(CHECK_STATUS_DURATION));
 
-                if (IsBall3DProcessRunning())
+                if (IsBall3DProcessRunning() || IsAppRunning())
                 {
                     if (Ball3DStatus.ClientStatus == helper.SQLManager.Ball3D_Status.Status_Online)
                     {
@@ -66,6 +66,11 @@ namespace b3dteam.Model
             {
                 return false;
             }
+        }
+
+        public bool IsAppRunning()
+        {
+            return helper.Application.IsAppRunning;
         }
     }
 }
