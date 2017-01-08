@@ -12,13 +12,17 @@
     <Grid>
         <Grid.Resources>
             <ContextMenu x:Key="TaskBarContextMenu">
+                <MenuItem Header="Open app" 
+                          IsEnabled="False"
+                          Click="ContextMenu_showApp_Click"/>
+                <Separator/>
                 <MenuItem Header="Set status to Online"
-                          Click="ContextMenu_statusOnline"/>
+                          Click="ContextMenu_statusOnline_Click"/>
                 <MenuItem Header="Set status to Offine"
-                          Click="ContextMenu_statusOffine"/>
+                          Click="ContextMenu_statusOffine_Click"/>
                 <Separator/>
                 <MenuItem Header="Exit (Offine)"
-                          Click="ContextMenu_exitApplication"/>
+                          Click="ContextMenu_exitApplication_Click"/>
             </ContextMenu>
         </Grid.Resources>
         <tb:TaskbarIcon x:Name="myNotifyIcon"
@@ -42,7 +46,8 @@
         <Button Click="button_selectFile_Click"
                 Name="button_selectFile"
                 Width="100"
-                Height="30">
+                Height="30"
+                Visibility="Collapsed">
             Select file</Button>
 
         <Button Click="button_statusOnline_Click"

@@ -67,7 +67,17 @@ namespace b3dteam.View
                 Properties.Settings.Default.rememberme = true;
                 Properties.Settings.Default.Save();
             };
-            
+
+            FocusManager.SetFocusedElement(this, textbox_Login);
+            textbox_Login.SelectAll();
+
+            this.KeyDown += (s, e) =>
+            {
+                if(e.Key == Key.Enter || e.Key == Key.Space)
+                {
+                    button_Login_Click(null, null);
+                }
+            };
         }
 
         private void button_Cancel_Click(object sender, RoutedEventArgs e)

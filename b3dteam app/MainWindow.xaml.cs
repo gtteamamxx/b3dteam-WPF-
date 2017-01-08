@@ -21,16 +21,26 @@ namespace b3dteam_app
     /// </summary>
     public partial class MainWindow : Window
     {
+        public static MainWindow gui;
+
         public MainWindow()
         {
             InitializeComponent();
+            gui = this;
 
             this.Loaded += MainWindow_Loaded;
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            if(helper.User.ClientUser == null)
+            {
+                //bad user
+            }
+            else
+            {
 
+            }
         }
     }
 }

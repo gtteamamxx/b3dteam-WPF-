@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:b3dteam.View"
         mc:Ignorable="d"
-        Title="LoginWindow" Height="400" Width="500">
+        Title="Login" Height="400" Width="500">
     
     <Grid>
         <Label Margin="10">Before using this tool, you have to login.</Label>

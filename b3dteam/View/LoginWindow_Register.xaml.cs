@@ -33,6 +33,17 @@ namespace b3dteam.View
             textbox_Login.TextChanged += TextBoxTextChanged;
             textbox_Password.PasswordChanged += TextBoxTextChanged;
             textbox_Password_Retype.PasswordChanged += TextBoxTextChanged;
+
+            FocusManager.SetFocusedElement(this, textbox_Login);
+            textbox_Login.SelectAll();
+
+            this.KeyDown += (s, e) =>
+            {
+                if (e.Key == Key.Enter || e.Key == Key.Space)
+                {
+                    button_Register_Click(null, null);
+                }
+            };
         }
 
         private void TextBoxTextChanged(object sender, object e)

@@ -8,6 +8,9 @@ namespace helper
 {
     public class User
     {
+        public static User _ClientUser;
+        public static User ClientUser { get { return _ClientUser; } set { _ClientUser = value; } }
+
         public int userid { get; set; }
         public string login { get; set; }
         public string password { get; set; }
@@ -23,6 +26,8 @@ namespace helper
             this.password = password;
             this.email = email;
             this.usertype = usertype;
+
+            ClientUser = this;
         }
 
         public User(int userid, string login, string password, string email, int usertype)

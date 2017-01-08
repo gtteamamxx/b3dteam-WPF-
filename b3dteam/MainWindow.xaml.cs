@@ -27,8 +27,8 @@ namespace b3dteam
         public bool IsBall3DFileCorrect => Ball3DPath.Contains(".exe");
 
         public Ball3DProcess Ball3DGameProcess;
-        public static helper.User ClientUser;
 
+        public static helper.User ClientUser { get; set; }
         public static bool _RunOnlyApp = false;
 
         public MainWindow()
@@ -38,8 +38,16 @@ namespace b3dteam
             Ball3DGameProcess = new Ball3DProcess(this);
             NotyficationManager.SetInstanceOfMainWindow(this);
 
-            this.Loaded += (a, b) =>
+            text_Info.Content = "Loading...";
+
+            this.Loaded += async (a, b) =>
             {
+                if(!await Network.IsInternetAvailable())
+                {
+                    MessageBox.Show("Before using this app, you must have internet connection! [pinging google.com failed]");
+                    this.Close();
+                }
+
                 var ball3dExePath = Properties.Settings.Default.Ball3DExePath;
 
                 if (ball3dExePath == "None" || ball3dExePath == "")
@@ -197,8 +205,7 @@ namespace b3dteam
 
             if (_RunOnlyApp)
             {
-                b3dteam_app.MainWindow a = new b3dteam_app.MainWindow();
-                a.Show();
+                ShowApplication();
             }
             else if (Ball3DGameProcess.IsBall3DProcessRunning())
             {
@@ -277,6 +284,7 @@ namespace b3dteam
                     {
                         if (ClientUser != null)
                         {
+                            (myNotifyIcon.ContextMenu.Items[0] as MenuItem).IsEnabled = true;
                             Run(Ball3DStatus.ClientStatus);
                         }
                     };
@@ -288,22 +296,42 @@ namespace b3dteam
             }
         }
 
+        private void ShowApplication()
+        {
+            b3dteam_app.MainWindow mw = b3dteam_app.MainWindow.gui == null ? new b3dteam_app.MainWindow() : b3dteam_app.MainWindow.gui;
+            mw.Show();
+        }
+
         //////////////////////////////////////////////////////////////////////////
 
-        private void ContextMenu_statusOnline(object sender, RoutedEventArgs e)
+        private void ContextMenu_statusOnline_Click(object sender, RoutedEventArgs e)
         {
             Ball3DStatus.ClientStatus = helper.SQLManager.Ball3D_Status.Status_Online;
         }
 
-        private void ContextMenu_statusOffine(object sender, RoutedEventArgs e)
+        private void ContextMenu_statusOffine_Click(object sender, RoutedEventArgs e)
         {
             Ball3DStatus.ClientStatus = helper.SQLManager.Ball3D_Status.Status_Offine;
         }
             
-        private void ContextMenu_exitApplication(object sender, RoutedEventArgs e)
+        private void ContextMenu_exitApplication_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
         }
+
+        private void ContextMenu_showApp_Click(object sender, RoutedEventArgs e)
+        {
+            if (ClientUser != null)
+            {
+                ShowApplication();
+            }
+            else
+            {
+                MessageBox.Show("Before opening app, you have login first!", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        //////////////////////////////////////////////////////////////////////////
 
         private void button_RunApp_Offine_Click(object sender, RoutedEventArgs e)
         {

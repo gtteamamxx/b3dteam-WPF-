@@ -23,6 +23,8 @@ namespace b3dteam.Model
 
         public static void ResetUser(this helper.User user)
         {
+            MainWindow.ClientUser = null;
+
             Properties.Settings.Default.email = "";
             Properties.Settings.Default.login = "";
             Properties.Settings.Default.password = "";
