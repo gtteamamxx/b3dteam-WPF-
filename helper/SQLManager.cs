@@ -43,6 +43,7 @@ namespace helper
                 SqlConnectionStringBuilder sqlsb = new SqlConnectionStringBuilder();
 
 
+
                 _sqlConnection.ConnectionString = sqlsb.ConnectionString;
 
                 try
@@ -136,6 +137,9 @@ namespace helper
                             int _usertype = rd.GetInt32(4);
                             int _lastactivity = rd.GetInt32(5);
                             int _regtime = rd.GetInt32(6);
+                            string _userfriends = $"{rd.GetValue(7)}";
+                            string _messages = $"{rd.GetValue(7)}";
+                            string _userteams = $"{rd.GetValue(7)}";
 
                             SqlConnection.Close();
 
@@ -144,7 +148,7 @@ namespace helper
                                 return new Tuple<LoginAccountStatus, User>(LoginAccountStatus.Account_Not_Activated, null);
                             }
 
-                            return new Tuple<LoginAccountStatus, User>(LoginAccountStatus.Succesful, new User(_userid, _login, _password, _email, _lastactivity, _regtime, _usertype));
+                            return new Tuple<LoginAccountStatus, User>(LoginAccountStatus.Succesful, new User(_userid, _login, _password, _email, _lastactivity, _regtime, _usertype, _userfriends, _messages, _userteams));
                         }
 
                         SqlConnection.Close();
@@ -163,7 +167,7 @@ namespace helper
 
         private static async Task<bool?> CheckIfUserExists(string login)
         {
-            string query = "SELECT login FROM USERS WHERE login = '" + login + "';";
+            string query = $"SELECT login FROM USERS WHERE login = '{login}';";
 
             try
             {
@@ -186,7 +190,7 @@ namespace helper
 
         private static async Task<bool?> CheckIfEmailWExists(string email)
         {
-            string query = "SELECT email FROM USERS WHERE email = '" + email + "';";
+            string query = $"SELECT email FROM USERS WHERE email = '{email}';";
 
             try
             {
@@ -215,7 +219,7 @@ namespace helper
                 return true;
             }
 
-            string query = "UPDATE USERS SET lastactivity = " + GetTimeStamp() + " WHERE userid = " + userid + ";";
+            string query = $"UPDATE USERS SET lastactivity = {GetTimeStamp()} WHERE userid = {userid};";
 
             try
             {

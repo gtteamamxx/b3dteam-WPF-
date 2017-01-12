@@ -46,7 +46,7 @@ namespace b3dteam
 
                 if (!await Network.IsInternetAvailable())
                 {
-                    var clickedButton = MessageBox.Show("Before using this app, you must have internet connection! [pinging google.com failed]" + Environment.NewLine + "Click \"OK\" to retry.", "Information", MessageBoxButton.OKCancel);
+                    var clickedButton = MessageBox.Show($"Before using this app, you must have internet connection! [pinging google.com failed] {Environment.NewLine}Click \"OK\" to retry.", "Information", MessageBoxButton.OKCancel);
 
                     if (clickedButton == MessageBoxResult.OK)
                     {
@@ -245,7 +245,7 @@ namespace b3dteam
 
             if (!(await helper.SQLManager.ConnectToDatabase()))
             {
-                text_Info.Content = "There was problem with connection to database." + Environment.NewLine + "Write to grs4_98@o2.pl";
+                text_Info.Content = $"There was problem with connection to database.{Environment.NewLine}Write to grs4_98@o2.pl";
                 button_selectFile.Visibility = Visibility.Visible;
                 button_statusOffine.Visibility = Visibility.Collapsed;
                 button_statusOnline.Visibility = Visibility.Collapsed;

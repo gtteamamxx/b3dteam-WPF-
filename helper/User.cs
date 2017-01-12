@@ -46,6 +46,9 @@ namespace helper
         public int usertype { get; set; }
         public int lastactivity { get; set; }
         public int regtime { get; set; }
+        public string userfriends { get; set; }
+        public string messages { get; set; }
+        public string userteams { get; set; }
 
         public void _setUser(int userid, string login, string password, string email, int usertype)
         {
@@ -74,6 +77,30 @@ namespace helper
             _setUser(userid, login, password, email, usertype);
             this.lastactivity = lastactivity;
             this.regtime = regtime;
+        }
+        public User(int userid, string login, string password, string email, int lastactivity, int regtime, int usertype, string userfriends)
+        {
+            _setUser(userid, login, password, email, usertype);
+            this.lastactivity = lastactivity;
+            this.regtime = regtime;
+            this.userfriends = userfriends;
+        }
+        public User(int userid, string login, string password, string email, int lastactivity, int regtime, int usertype, string userfriends, string messages)
+        {
+            _setUser(userid, login, password, email, usertype);
+            this.lastactivity = lastactivity;
+            this.regtime = regtime;
+            this.userfriends = userfriends;
+            this.messages = messages;
+        }
+        public User(int userid, string login, string password, string email, int lastactivity, int regtime, int usertype, string userfriends, string messages, string userteams)
+        {
+            _setUser(userid, login, password, email, usertype);
+            this.lastactivity = lastactivity;
+            this.regtime = regtime;
+            this.userfriends = userfriends;
+            this.messages = messages;
+            this.userteams = userteams;
         }
     }
 }

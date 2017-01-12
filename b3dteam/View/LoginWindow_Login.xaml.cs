@@ -111,7 +111,7 @@ namespace b3dteam.View
                     break;
 
                 case helper.SQLManager.LoginAccountStatus.Account_Not_Activated:
-                    MessageBox.Show("This account is not activated yet." + Environment.NewLine + "Write to grs4_98@o2.pl, or on Gadu-Gadu 38862128", "Error", MessageBoxButton.OK, MessageBoxImage.Stop);
+                    MessageBox.Show("This account is not activated yet.{Environment.NewLine}Write to grs4_98@o2.pl, or on Gadu-Gadu 38862128", "Error", MessageBoxButton.OK, MessageBoxImage.Stop);
                     break;
             }
         }

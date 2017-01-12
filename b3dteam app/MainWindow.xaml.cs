@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -38,8 +37,7 @@ namespace b3dteam_app
 
         private void UpdateTitle()
         {
-            this.Title = "Ball3D Team App - Logged as " + helper.User.ClientUser.login + " - " + (helper.User.ClientStatus == helper.SQLManager.Ball3D_Status.Status_Offine ? "offine" : "online");
-
+            this.Title = $"Ball3D Team App - Logged as {helper.User.ClientUser.login} - {(helper.User.ClientStatus == helper.SQLManager.Ball3D_Status.Status_Offine ? "offine" : "online")}";
         }
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {

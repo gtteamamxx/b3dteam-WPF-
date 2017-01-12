@@ -41,7 +41,7 @@
                Foreground="Green"
                HorizontalAlignment="Center"
                VerticalAlignment="Top"
-               Margin="10,10,10,10"></Label>
+               Margin="10,10,10,10"/>
 
         <Button Click="button_selectFile_Click"
                 Name="button_selectFile"
