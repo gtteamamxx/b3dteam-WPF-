@@ -12,6 +12,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Diagnostics;
 
 namespace b3dteam_app
 {
@@ -33,6 +36,10 @@ namespace b3dteam_app
             {
                 UpdateTitle();
             };
+
+
+            helper.Application.OnCloseApp += () => Application.Current.Shutdown();
+
         }
 
         private void UpdateTitle()
@@ -71,7 +78,7 @@ namespace b3dteam_app
 
         private void Menu_File_Options_Click(object sender, RoutedEventArgs e)
         {
-            View.Options optionsWindow = new View.Options();
+            View.OptionsWindow optionsWindow = new View.OptionsWindow();
             optionsWindow.ShowDialog();
         }
     }

@@ -17,7 +17,8 @@ namespace b3dteam.Model
             Properties.Settings.Default.usertype = user.usertype;
             Properties.Settings.Default.regtime = user.regtime;
             Properties.Settings.Default.lastactivity = user.lastactivity;
-
+            Properties.Settings.Default.autologin = (user.autologin == 1 ? true : false);
+            Properties.Settings.Default.rememberme = (user.rememberme == 1 ? true : false);
             Properties.Settings.Default.Save();
         }
 
@@ -32,7 +33,8 @@ namespace b3dteam.Model
             Properties.Settings.Default.usertype = -1;
             Properties.Settings.Default.regtime = 0;
             Properties.Settings.Default.lastactivity = 0;
-
+            Properties.Settings.Default.autologin = false;
+            Properties.Settings.Default.rememberme = false;
             Properties.Settings.Default.Save();
         }
     }

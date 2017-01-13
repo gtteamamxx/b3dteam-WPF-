@@ -82,6 +82,26 @@ namespace b3dteam
                     AskUserForStatus();
                 }
             };
+
+
+            helper.User.OnClientSave += User_OnClientSave;
+            helper.User.OnClientReset += User_OnClientReset;
+
+            helper.Application.OnCloseApp += () =>
+            {
+                System.Diagnostics.Process.Start(Application.ResourceAssembly.Location);
+                Application.Current.Shutdown();
+            };
+        }
+
+        private void User_OnClientReset(helper.User user)
+        {
+            user.ResetUser();
+        }
+
+        private void User_OnClientSave(helper.User user)
+        {
+            user.SaveUser();
         }
 
         public void SaveBall3DPathAndAskUserForStatus()
@@ -272,6 +292,9 @@ namespace b3dteam
                     Properties.Settings.Default.login, Properties.Settings.Default.password,
                     Properties.Settings.Default.email, Properties.Settings.Default.lastactivity,
                     Properties.Settings.Default.regtime, Properties.Settings.Default.usertype);
+
+                ClientUser.rememberme = Properties.Settings.Default.rememberme ? 1 : 0;
+                ClientUser.autologin = Properties.Settings.Default.autologin ? 1 : 0;
 
                 return true;
             }

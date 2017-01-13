@@ -43,6 +43,10 @@ namespace b3dteam.View
             checkbox_AutoLogin.Unchecked += (s, e) =>
             {
                 Properties.Settings.Default.autologin = false;
+                if (helper.User.ClientUser != null)
+                {
+                    helper.User.ClientUser.autologin = 0;
+                }
                 Properties.Settings.Default.Save();
                 checkbox_Rememberme.IsEnabled = true;
             };
@@ -51,7 +55,10 @@ namespace b3dteam.View
             {
                 checkbox_Rememberme.IsChecked = true;
                 checkbox_Rememberme.IsEnabled = false;
-
+                if (helper.User.ClientUser != null)
+                {
+                    helper.User.ClientUser.autologin = 1;
+                }
                 Properties.Settings.Default.autologin = true;
                 Properties.Settings.Default.Save();
             };
@@ -60,11 +67,20 @@ namespace b3dteam.View
             checkbox_Rememberme.Unchecked += (s, e) =>
             {
                 Properties.Settings.Default.rememberme = false;
-                Model.Extension.ResetUser(MainWindow.ClientUser);
+                if (helper.User.ClientUser != null)
+                {
+                    helper.User.ClientUser.rememberme = 0;
+
+                    Model.Extension.ResetUser(MainWindow.ClientUser);
+                }
             };
             checkbox_Rememberme.Checked += (s, e) =>
             {
                 Properties.Settings.Default.rememberme = true;
+                if (helper.User.ClientUser != null)
+                {
+                    helper.User.ClientUser.rememberme = 1;
+                }
                 Properties.Settings.Default.Save();
             };
 
@@ -101,6 +117,8 @@ namespace b3dteam.View
 
                 case helper.SQLManager.LoginAccountStatus.Succesful:
                     var user = loginTuple.Item2;
+                    user.rememberme = Properties.Settings.Default.rememberme ? 1 : 0;
+                    user.autologin = Properties.Settings.Default.autologin ? 1 : 0;
                     Model.Extension.SaveUser(user);
                     MainWindow.ClientUser = user;
                     LoginWindow.gui.Close();

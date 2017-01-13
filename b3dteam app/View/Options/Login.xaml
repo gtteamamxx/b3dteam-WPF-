@@ -1,0 +1,150 @@
+﻿<UserControl x:Class="b3dteam_app.View.Options.Options.Login"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:b3dteam_app.View.Options.Options"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="400">
+    
+    <Grid Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Grid.Column="0"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   TextAlignment="Center"
+                   Text="Remember login informations:" />
+
+        <StackPanel  Grid.Row="0"
+                     Grid.Column="1"
+                     VerticalAlignment="Center">
+
+            <RadioButton GroupName="loginInf"
+                     Name="radio_RememberLoginInf_Enabled"
+                     IsChecked="False" 
+                     Content="Enabled"/>
+
+
+            <RadioButton GroupName="loginInf"
+                     Name="radio_RememberLoginInf_Disabled"
+                     IsChecked="False" 
+                     Content="Disabled"/>
+            
+        </StackPanel>
+
+        <Separator Grid.ColumnSpan="2"
+                   VerticalAlignment="Bottom" />
+
+        <Separator Grid.ColumnSpan="2"
+                   Grid.Row="1"
+                   VerticalAlignment="Bottom" />
+        
+        <TextBlock Grid.Row="1"
+                   Grid.Column="0"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   TextAlignment="Center"
+                   Text="Autologin:" />
+
+        <StackPanel Grid.Row="1"
+                    Grid.Column="1"
+                    VerticalAlignment="Center">
+
+            <RadioButton GroupName="autoLoginInf"
+                     Name="radio_AutoLogin_Enabled"
+                     IsChecked="False" 
+                     Content="Enabled"/>
+
+
+            <RadioButton GroupName="autoLoginInf"
+                     Name="radio_AutoLogin_Disabled"
+                     IsChecked="False" 
+                     Content="Disabled"/>
+
+        </StackPanel>
+
+        <TextBlock Foreground="Green" 
+                   Grid.Row="2"
+                   Grid.Column="1"
+                   Grid.RowSpan="2"
+                   VerticalAlignment="Center"
+                   Width="150"
+                   HorizontalAlignment="Right"
+                   Text="If you forget something or you want to change password, write to grs4_98@o2.pl or on GG: 38862128"
+                   TextWrapping="Wrap"/>
+
+        <Button Name="button_Logout"
+                Grid.Row="4"
+                Grid.ColumnSpan="2"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                Click="button_Logout_Click"
+                Width="50"
+                Height="30">
+            Logout
+        </Button>
+        <Grid Grid.ColumnSpan="2"
+              Grid.Row="2"
+              Grid.RowSpan="3"
+              Margin="0,-50,0,0"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+
+            <StackPanel>
+                <Label>Login: (Nick in ball3d)</Label>
+                <TextBox Name="textbox_Login"
+                         Width="200"
+                         Height="25"
+                         Margin="0,0,160,0"
+                         IsEnabled="False"
+                         VerticalContentAlignment="Center"
+                         HorizontalAlignment="Left"/>
+            </StackPanel>
+
+            <StackPanel Margin="0,50,0,0">
+                <Label>Password:</Label>
+                <PasswordBox Name="textbox_Password"
+                             Width="200"
+                             Height="25"
+                             IsEnabled="False"
+                             VerticalContentAlignment="Center"
+                             HorizontalAlignment="Left"/>
+            </StackPanel>
+        </Grid>
+
+        <Button Name="button_Save"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Width="100"
+                Height="30"
+                Grid.Row="4"
+                Click="button_Save_Click">
+            Save
+        </Button>
+
+        <Button Name="button_Cancel"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Width="100"
+                Height="30"
+                Grid.Row="4"
+                Grid.Column="1"
+                Click="button_Cancel_Click">
+            Cancel
+        </Button>
+        
+    </Grid>
+</UserControl>

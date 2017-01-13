@@ -9,5 +9,12 @@ namespace helper
     public static class Application
     {
         public static bool IsAppRunning = false;
+        public delegate void CloseAppEvent();
+        public static event CloseAppEvent OnCloseApp;
+
+        public static void CloseApp()
+        {
+            OnCloseApp?.Invoke();
+        }
     }
 }

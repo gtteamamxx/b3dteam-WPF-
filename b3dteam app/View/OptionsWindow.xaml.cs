@@ -17,11 +17,15 @@ namespace b3dteam_app.View
     /// <summary>
     /// Interaction logic for Options.xaml
     /// </summary>
-    public partial class Options : Window
+    public partial class OptionsWindow : Window
     {
-        public Options()
+        public static OptionsWindow gui;
+
+        public OptionsWindow()
         {
             InitializeComponent();
+
+            gui = this;
         }
     }
 }

@@ -28,14 +28,19 @@
                              Height="25"
                              VerticalContentAlignment="Center"
                              HorizontalAlignment="Left"/>
-            </StackPanel>
+
+                <TextBlock Foreground="Green" 
+                           Width="200"
+                           Text="If u forget something, write to grs4_98@o2.pl or on GG: 38862128"
+                           TextWrapping="Wrap"/>
+            
 
             <CheckBox Name="checkbox_AutoLogin"
-                      Margin="0,105,0,0"
+                      Margin="0,4"
                       Content="Autologin"/>
             <CheckBox Name="checkbox_Rememberme"
-                      Margin="0,125,0,0"
                       Content="Remember me"/>
+            </StackPanel>
 
         </Grid>
 

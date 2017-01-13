@@ -11,7 +11,13 @@ namespace helper
         public delegate void _ClientStatusChanged(SQLManager.Ball3D_Status newStatus, SQLManager.Ball3D_Status oldStatus);
         public static event _ClientStatusChanged OnClientStatusChanged;
 
-        public static User _ClientUser;
+        public delegate void _ClientSave(User user);
+        public static event _ClientSave OnClientSave;
+
+        public delegate void _ClientReset(User user);
+        public static event _ClientReset OnClientReset;
+
+        private static User _ClientUser;
         public static SQLManager.Ball3D_Status _ClientStatus;
         
         public static User ClientUser
@@ -49,6 +55,8 @@ namespace helper
         public string userfriends { get; set; }
         public string messages { get; set; }
         public string userteams { get; set; }
+        public int autologin { get; set; }
+        public int rememberme { get; set; }
 
         public void _setUser(int userid, string login, string password, string email, int usertype)
         {
@@ -101,6 +109,16 @@ namespace helper
             this.userfriends = userfriends;
             this.messages = messages;
             this.userteams = userteams;
+        }
+
+        public static void Save()
+        {
+            OnClientSave?.Invoke(_ClientUser);
+        }
+
+        public static void Reset()
+        {
+            OnClientReset?.Invoke(_ClientUser);
         }
     }
 }

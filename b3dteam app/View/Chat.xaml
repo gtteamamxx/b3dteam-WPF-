@@ -14,10 +14,12 @@
                    VerticalAlignment="Top"
                    FontSize="20"
                    HorizontalAlignment="Center"
-                   TextWrapping="Wrap"
+                   TextAlignment="Center"
+                   TextWrapping="WrapWithOverflow"
                    Width="520"
                    Margin="20"
-                   Text="If you want to chat on Discord Ball3D Chat, please login. Your status will be set on the one which you have chosen." />
+                   Text="If you want to chat on Discord Ball3D Chat, please login. 
+                   Your status will be set on the one which you have chosen at startup. After login, you will be logged automaticcaly, you can change this in Options settings" />
 
         <StackPanel VerticalAlignment="Center"
                     HorizontalAlignment="Center">
@@ -57,6 +59,10 @@
                              VerticalContentAlignment="Center"/>
             </Grid>
 
+            <CheckBox Name="checkbox_AutoLogin"
+                      Margin="5,4"
+                      Content="Autologin"/>
+
             <Button Name="button_Login"
                     Click="button_Login_Click"
                     Width="100"
@@ -66,7 +72,6 @@
         </StackPanel>
 
         <Button VerticalAlignment="Bottom"
-                FontSize="20"
                 HorizontalAlignment="Center"
                 Height="30"
                 Margin="0,0,0,30"
@@ -75,7 +80,7 @@
                 Width="200">
             Register new account
         </Button>
-        
+
 
         <StackPanel Orientation="Horizontal">
 
@@ -88,11 +93,21 @@
 
                 <ListView.ItemTemplate>
                     <DataTemplate DataType="Model:Server">
-                        <Grid>
+                        <Grid Width="180">
                             <TextBlock Foreground="LightGray">#</TextBlock>
                             <TextBlock Foreground="Gray"
-                                   Margin="10,0,0,0"
-                                   Text="{Binding Name}" />
+                                       Margin="10,0,0,0"
+                                       Width="140"
+                                       HorizontalAlignment="Left"
+                                       Text="{Binding Name}"
+                                       TextWrapping="Wrap"/>
+                            <Button HorizontalAlignment="Right" 
+                                    Height="20"
+                                    DataContext="{Binding}"
+                                    Click="button_ServerMute"
+                                    VerticalAlignment="Center"
+                                    Background="{Binding MuteButtonColor}"
+                                    Content="{Binding MuteText}"/>
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
@@ -101,22 +116,22 @@
 
             <StackPanel HorizontalAlignment="Left"
                         VerticalAlignment="Center">
-                <WindowsFormsHost 
-                                  Name="textbox_Chat"
+                <WindowsFormsHost Name="textbox_Chat"
                                   Width="500"
-                                  Margin="10,-30,0,0"
+                                  Margin="10,0,0,0"
                                   Height="470"
                                   Visibility="Collapsed">
 
                     <wf:RichTextBox ReadOnly="True"
-                                ScrollBars="ForcedVertical">
+                                    ScrollBars="ForcedVertical">
                     </wf:RichTextBox>
                 </WindowsFormsHost>
-                
+
                 <TextBox Name="textbox_Message"
                          Width="500"
-                         Margin="10,0,0,0"
+                         Margin="10,10,0,0"
                          Height="30"
+                         AcceptsReturn="True"
                          KeyUp="textbox_Message_KeyUp"
                          Visibility="Collapsed"/>
             </StackPanel>

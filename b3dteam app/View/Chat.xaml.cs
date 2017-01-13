@@ -28,86 +28,92 @@ namespace b3dteam_app.View
 
         public static Discord.Server GetBall3DServer() => _DiscordClient.Servers.FirstOrDefault(p => p.Name.Contains("Ball 3D"));
         public System.Windows.Forms.RichTextBox GetRichTextBox;
+
+        public static Chat gui;
         public Chat()
         {
             InitializeComponent();
+            gui = this;
             _DiscordClient = new Discord.DiscordClient(); ;
             ListOfServers = new ObservableCollection<Model.Server>();
             GetRichTextBox  = textbox_Chat.Child as System.Windows.Forms.RichTextBox;
+
             listview_Servers.SelectionChanged += Listview_Servers_SelectionChanged;
 
             textbox_Login.Text = helper.User.ClientUser.email;
+
+            if(Properties.Settings.Default.autologin && !string.IsNullOrEmpty(Properties.Settings.Default.password))
+            {
+                textbox_Login.Text = Properties.Settings.Default.email;
+                textbox_Passsword.Password = Properties.Settings.Default.password;
+                button_Login_Click(button_Login, null);
+            }
+
+            this.Loaded += (s, e) =>
+            {
+                GetRichTextBox.SelectionStart = GetRichTextBox.Text.Length;
+                GetRichTextBox.ScrollToCaret();
+            };
         }
 
+        public void ResetPage()
+        {
+            _DiscordClient = new Discord.DiscordClient(); ;
+            ListOfServers = new ObservableCollection<Model.Server>();
+            textbox_Login.Text = helper.User.ClientUser.email;
+            GetRichTextBox.Text = "";
+            ChangeButtonsVisibility(Visibility.Visible);
+            HideChatAndServers();
+            button_Login.Content = "Login";
+            button_Login.IsEnabled = true;
+        }
         private async void Listview_Servers_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             GetRichTextBox.Clear();
 
-            var channelId = (listview_Servers.SelectedItem as Model.Server).Id;
+            var selectedItem = listview_Servers.SelectedItem as Model.Server;
+
+            if(selectedItem == null)
+            {
+                selectedItem = ListOfServers.First(p => p.Name == "global") as Model.Server;
+            }
+
+            listview_Servers.SelectedItem = selectedItem;
+            var channelId = selectedItem.Id;
 
             var messagesFromChannel = await DownloadLastMessages(channelId);
 
             messagesFromChannel.Reverse();
-            messagesFromChannel.ToList()
-                    .ForEach(p =>
-                    {
-                        AddMessage(p);
-                    });
+            messagesFromChannel.ToList().ForEach(p => AddMessage(p));
 
             System.Windows.Forms.RichTextBox a = new System.Windows.Forms.RichTextBox();
         }
 
+        private DateTime _LastMessageTime = new DateTime();
         private void AddMessage(Discord.Message message)
         {
             var author = message.User == null ? "Unknown user" : message.User.Name;
 
+            CheckLastMessageTimeAndAddDateLineIfNeeded(message);
             GetRichTextBox.AppendText($"{message.Timestamp.ToShortTimeString()}");
             AppendTextToRichTextBoxForms($" {author}:", GetColorOfNick(author), false);
 
             GetRichTextBox.AppendText($" {message.Text}\n");
+
+            //scroll to end
             GetRichTextBox.SelectionStart = GetRichTextBox.Text.Length;
             GetRichTextBox.ScrollToCaret();
         }
-        /*public string FormatText(Discord.Message message)
+
+        private void CheckLastMessageTimeAndAddDateLineIfNeeded(Discord.Message message)
         {
-            List<string> idies = new List<string>();
-            var text = message.Text;
-
-            int temp_id = -1;
-
-            for (int i = 0; i < text.Length; i++)
+            if(_LastMessageTime.Day != message.Timestamp.Day)
             {
-                if(temp_id != -1)
-                {
-                    int result = 0;
-
-                    if (int.TryParse($"{text[i]}", out result))
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        idies.Add(text.Substring(temp_id, i - temp_id));
-                        temp_id = -1;
-                    }
-                }
-                
-                if ((i >= 2 && text[i-2] == '<' && text[i - 1] == '@'))
-                {
-                    temp_id = i;
-                }
-               
+                AppendTextToRichTextBoxForms($"=================={message.Timestamp.ToShortDateString()}==================", System.Drawing.Color.Red, true);
+                _LastMessageTime = message.Timestamp;
             }
-            
-            foreach(string id in idies)
-            {
-                var user = message.Channel.Users.First(p => p.Id == ulong.Parse(id));
-                text.Replace($"<@{id}>", user.Name);
-                var a = GetBall3DServer().Users;
-            }
+        }
 
-            return text;
-        }*/
         private static List<Tuple<string, System.Drawing.Color>> listOfNicksAndColors = new List<Tuple<string, System.Drawing.Color>>();
 
         public System.Drawing.Color GetColorOfNick(string nick)
@@ -117,7 +123,8 @@ namespace b3dteam_app.View
             if(user == null)
             {
                 var random = new Random();
-                user = new Tuple<string, System.Drawing.Color>(nick, System.Drawing.Color.FromArgb(255, (byte)random.Next(0, 150), (byte)random.Next(0, 150), (byte)random.Next(0, 150)));
+                //not to light, and not to dark
+                user = new Tuple<string, System.Drawing.Color>(nick, System.Drawing.Color.FromArgb(255, (byte)random.Next(30, 215), (byte)random.Next(30, 215), (byte)random.Next(30, 215)));
                 listOfNicksAndColors.Add(user);
             }
             return user.Item2;
@@ -146,6 +153,7 @@ namespace b3dteam_app.View
             return (await GetBall3DServer().AllChannels.First(p => p.Id == channelId).DownloadMessages()).ToList();
         }
 
+        private static bool _OnClientStatusChangedSubscribed = false;
         private async void button_Login_Click(object sender, RoutedEventArgs e)
         {
             var defaultText = (sender as Button).Content as string;
@@ -180,16 +188,42 @@ namespace b3dteam_app.View
             {
                 _DiscordClient.SetStatus(helper.User.ClientStatus == helper.SQLManager.Ball3D_Status.Status_Online ? Discord.UserStatus.Online : Discord.UserStatus.Invisible);
 
+                if (_OnClientStatusChangedSubscribed == false)
+                {
+                    _OnClientStatusChangedSubscribed = true;
+                    helper.User.OnClientStatusChanged += (newStatus, oldStatus) =>
+                    {
+                        if (newStatus != oldStatus)
+                        {
+                            _DiscordClient.SetStatus(helper.User.ClientStatus == helper.SQLManager.Ball3D_Status.Status_Online ? Discord.UserStatus.Online : Discord.UserStatus.Invisible);
+                        }
+                    };
+                }
+
+                Properties.Settings.Default.email = textbox_Login.Text;
+                Properties.Settings.Default.password = textbox_Passsword.Password;
+
+                if (checkbox_AutoLogin.IsChecked == true)
+                {
+                    Properties.Settings.Default.autologin = true;
+
+                }
+                Properties.Settings.Default.Save();
+
                 ball3DServer.AllChannels
                     .Where(p => p.Type == Discord.ChannelType.Text)
                         .ToList()
-                            .ForEach(p => ListOfServers.Add(new Model.Server { Name = p.Name, Id = p.Id }));
+                            .ForEach(p => ListOfServers.Add(new Model.Server { Name = p.Name, Id = p.Id, MuteText = CheckIfChannelIsMuted(p.Name) ? "Unmute" : "Mute" }));
 
                 listview_Servers.ItemsSource = ListOfServers;
                 listview_Servers.SelectedItem = ListOfServers.First(p => p.Name == "global");
 
-                _DiscordClient.MessageReceived += _DiscordClient_MessageReceived;
-                RemoveButtons();
+                if (_MessageReceivedSubscribed == false)
+                {
+                    _MessageReceivedSubscribed = true;
+                    _DiscordClient.MessageReceived += _DiscordClient_MessageReceived;
+                }
+                ChangeButtonsVisibility(Visibility.Collapsed);
                 ShowChatAndServers();
             }
             else
@@ -201,6 +235,8 @@ namespace b3dteam_app.View
             }
 
         }
+
+        private static bool _MessageReceivedSubscribed = false;
 
         private void _DiscordClient_MessageReceived(object sender, Discord.MessageEventArgs e)
         {
@@ -220,15 +256,24 @@ namespace b3dteam_app.View
             listview_Servers.Visibility = Visibility.Visible;
             textbox_Message.Visibility = Visibility.Visible;
         }
-        private void RemoveButtons()
+
+        private void HideChatAndServers()
         {
-            textblock_Info.Visibility = Visibility.Collapsed;
-            textbox_Login.Visibility = Visibility.Collapsed;
-            textbox_Passsword.Visibility = Visibility.Collapsed;
-            button_Login.Visibility = Visibility.Collapsed;
-            button_Register.Visibility = Visibility.Collapsed;
+            textbox_Chat.Visibility = Visibility.Collapsed;
+            listview_Servers.Visibility = Visibility.Collapsed;
             textbox_Message.Visibility = Visibility.Collapsed;
         }
+        private void ChangeButtonsVisibility(Visibility visible)
+        {
+            textblock_Info.Visibility = visible;
+            textbox_Login.Visibility = visible;
+            textbox_Passsword.Visibility = visible;
+            button_Login.Visibility = visible;
+            button_Register.Visibility = visible;
+            textbox_Message.Visibility = visible;
+            checkbox_AutoLogin.Visibility = visible;
+        }
+
         private void button_Register_Click(object sender, RoutedEventArgs e)
         {
             System.Diagnostics.Process.Start("https://discord.gg/HXXWDxS");
@@ -237,7 +282,7 @@ namespace b3dteam_app.View
         private static bool _Sending_Message = false;
         private async void textbox_Message_KeyUp(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter && !_Sending_Message)
+            if (e.Key == Key.Enter && e.Key != Key.LeftShift && !_Sending_Message)
             {
                 if (textbox_Message.Text.Trim().Length == 0)
                 {
@@ -250,6 +295,33 @@ namespace b3dteam_app.View
                 _Sending_Message = false;
                 textbox_Message.Text = "";
             }
+        }
+
+        private void button_ServerMute(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+
+            bool mute = ((string)button.Content).Contains("Un");
+            var server = ((button.DataContext) as Model.Server);
+            button.Content = mute ? "Mute" : "Unmute";
+
+            if(!mute)
+            {
+                Properties.Settings.Default.muttedservers += $"{server.Name}#";
+            }
+            else
+            {
+                Properties.Settings.Default.muttedservers = Properties.Settings.Default.muttedservers.Replace($"{server.Name}#", "");
+            }
+
+            button.Background = !mute ? new SolidColorBrush(new Color { A = 50, R = 255 }) : 
+                    new SolidColorBrush(new Color { A = 50, G = 255 });
+            Properties.Settings.Default.Save();
+        } 
+
+        private bool CheckIfChannelIsMuted(string channelName)
+        {
+            return Properties.Settings.Default.muttedservers.Contains($"{channelName}#");
         }
     }
 }
