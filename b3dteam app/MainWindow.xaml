@@ -53,6 +53,7 @@
 
                 <TabItem Name="tab_Events"
                          Header="Events">
+                    <view:Events />
                 </TabItem>
                 <TabItem Name="tab_Informations"
                          Header="Informations">

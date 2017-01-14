@@ -242,5 +242,53 @@ namespace helper
         {
             return (int)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
         }
+
+        public static async Task<string> GetPlainHTMLOfChanges()
+        {
+            string query = "SELECT html FROM EVENTS";
+
+            using (var command = new SqlCommand(query, SqlConnection))
+            {
+                try
+                {
+                    await SqlConnection.OpenAsync();
+
+                    var returnPlainHtml = ((await command.ExecuteScalarAsync()) as string);
+
+                    SqlConnection.Close();
+
+                    return returnPlainHtml;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Błąd podczas pobierania raw HTML" + Environment.NewLine + ex.Message);
+                    return null;
+                }
+            }
+        }
+
+        public static async Task<bool> SendPlainHTMLOfChanges(string changes)
+        {
+            string query = $"UPDATE EVENTS SET html = '{changes}';";
+
+            using (var command = new SqlCommand(query, SqlConnection))
+            {
+                try
+                {
+                    await SqlConnection.OpenAsync();
+
+                    await command.ExecuteNonQueryAsync();
+
+                    SqlConnection.Close();
+
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Błąd podczas wysyłania żądania raw HTML" + Environment.NewLine + ex.Message);
+                    return false;
+                }
+            }
+        }
     }
 }
