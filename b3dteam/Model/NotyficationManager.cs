@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace b3dteam.Model
+namespace b3dteam
 {
     public static class NotyficationManager
     {
@@ -15,6 +15,11 @@ namespace b3dteam.Model
         public static void SetInstanceOfMainWindow(MainWindow instance)
         {
             _InstanceOfMainWindow = instance;
+
+            b3dteam_app.Model.NotyficationHelper.OnSendMessage += (title, message) =>
+            {
+                MakeNotyfication(title, message);
+            };
         }
 
         public static void MakeNotyfication(string title, string message)

@@ -123,19 +123,31 @@
                                   Visibility="Collapsed">
 
                     <wf:RichTextBox ReadOnly="True"
-                                    ScrollBars="ForcedVertical">
+                                    DetectUrls="True"
+                                    WordWrap="False"
+                                    ZoomFactor="1.2"
+                                    ScrollBars="ForcedBoth">
                     </wf:RichTextBox>
                 </WindowsFormsHost>
 
-                <TextBox Name="textbox_Message"
-                         Width="500"
-                         Margin="10,10,0,0"
-                         Height="30"
-                         AcceptsReturn="True"
-                         KeyUp="textbox_Message_KeyUp"
-                         Visibility="Collapsed"/>
-            </StackPanel>
+                <StackPanel Orientation="Horizontal"
+                            Width="500"
+                            Margin="10,10,0,0"
+                            Height="30"
+                            Name="stackpanel_Message"
+                            Visibility="Collapsed">
 
+                    <TextBox Name="textbox_Message"
+                             AcceptsReturn="True"
+                             Width="430"
+                             KeyUp="textbox_Message_KeyUp"/>
+
+                    <Button Name="button_SendFile"
+                            Click="button_SendFile_Click"
+                            Width="70"
+                            Content="Send file" />
+                </StackPanel>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </UserControl>
