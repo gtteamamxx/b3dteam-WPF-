@@ -21,7 +21,7 @@ namespace b3dteam_app.View
     /// </summary>
     public partial class Chat : UserControl
     {
-
+        #region Variables
         public static Discord.DiscordClient _DiscordClient;
         public static bool IsLogged => _DiscordClient.CurrentUser != null && _DiscordClient.Servers.FirstOrDefault(p => p.Name.Contains("Ball 3D")) != null;
         public static ObservableCollection<Model.Server> ListOfServers;
@@ -29,28 +29,23 @@ namespace b3dteam_app.View
         public static Discord.Server GetBall3DServer() => _DiscordClient.Servers.FirstOrDefault(p => p.Name.Contains("Ball 3D"));
         public System.Windows.Forms.RichTextBox GetRichTextBox;
 
-        public static Chat gui;
-
         public bool isSending = false;
+
+        public static Chat gui;
+        #endregion
+
         public Chat()
         {
             InitializeComponent();
-            gui = this;
 
+            #region Initializing variables
+            gui = this;
             _DiscordClient = new Discord.DiscordClient(); ;
             ListOfServers = new ObservableCollection<Model.Server>();
             GetRichTextBox = textbox_Chat.Child as System.Windows.Forms.RichTextBox;
 
             textbox_Login.Text = helper.User.ClientUser.email;
-
-            listview_Servers.SelectionChanged += Listview_Servers_SelectionChanged;
-            
-            if (Properties.Settings.Default.autologin && !string.IsNullOrEmpty(Properties.Settings.Default.password))
-            {
-                textbox_Login.Text = Properties.Settings.Default.email;
-                textbox_Passsword.Password = Properties.Settings.Default.password;
-                button_Login_Click(button_Login, null);
-            }
+            #endregion
 
             this.Loaded += (s, e) =>
             {
@@ -58,6 +53,16 @@ namespace b3dteam_app.View
                 GetRichTextBox.ScrollToCaret();
             };
 
+            listview_Servers.SelectionChanged += Listview_Servers_SelectionChanged;
+
+            if (Properties.Settings.Default.autologin && !string.IsNullOrEmpty(Properties.Settings.Default.password))
+            {
+                textbox_Login.Text = Properties.Settings.Default.email;
+                textbox_Passsword.Password = Properties.Settings.Default.password;
+                button_Login_Click(button_Login, null);
+            }
+
+            #region Attachment Click
             GetRichTextBox.MouseClick += (a, e) =>
             {
                 var lineNumber = GetRichTextBox.Text.Substring(0, GetRichTextBox.SelectionStart).Count(chr => chr == '\n');
@@ -71,6 +76,11 @@ namespace b3dteam_app.View
                     {
                         var message = GetBall3DServer().AllChannels.First(p => (listview_Servers.SelectedItem as Model.Server).Name == p.Name).GetMessage(idOfMessage);
 
+                        if (message.Attachments.Length == 0)
+                        {
+                            MessageBox.Show("Error occured", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
                         var window = new Window()
                         {
                             Title = message.Attachments[0].Filename,
@@ -78,7 +88,7 @@ namespace b3dteam_app.View
                             Height = message.Attachments[0].Height == null ? 300 : (double)message.Attachments[0].Height,
                         };
 
-                        if(message.Attachments[0].Width != null)
+                        if (message.Attachments[0].Width != null)
                         {
                             window.Content = new Image() { Source = new BitmapImage(new Uri(message.Attachments[0].Url)) };
                         }
@@ -119,22 +129,14 @@ namespace b3dteam_app.View
                 }
 
             };
+
+            #endregion
         }
 
-        public void ResetPage()
-        {
-            _DiscordClient = new Discord.DiscordClient(); ;
-            ListOfServers = new ObservableCollection<Model.Server>();
-            textbox_Login.Text = helper.User.ClientUser.email;
-            GetRichTextBox.Text = "";
-            ChangeButtonsVisibility(Visibility.Visible);
-            HideChatAndServers();
-            button_Login.Content = "Login";
-            button_Login.IsEnabled = true;
-        }
+        #region Changing server
         private async void Listview_Servers_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if(isSending)
+            if (isSending)
             {
                 return;
             }
@@ -156,10 +158,15 @@ namespace b3dteam_app.View
             messagesFromChannel.Reverse();
             messagesFromChannel.ToList().ForEach(p => AddMessage(p));
 
+            SetUnreadedMessageStatus(selectedItem.Name, false);
             System.Windows.Forms.RichTextBox a = new System.Windows.Forms.RichTextBox();
         }
+        #endregion
+
+        #region Adding message to RichTextBox
 
         private DateTime _LastMessageTime = new DateTime();
+
         private void AddMessage(Discord.Message message)
         {
             var author = message.User == null ? "Unknown user" : message.User.Name;
@@ -170,7 +177,7 @@ namespace b3dteam_app.View
 
             bool hasAttachments = message.Attachments.Length > 0;
 
-            if(hasAttachments)
+            if (hasAttachments)
             {
                 AppendTextToRichTextBoxForms($" Click here to check attachments#{message.Id}", System.Drawing.Color.Red, false);
             }
@@ -187,22 +194,6 @@ namespace b3dteam_app.View
                 AppendTextToRichTextBoxForms($"=================={message.Timestamp.ToShortDateString()}==================", System.Drawing.Color.Red, true);
                 _LastMessageTime = message.Timestamp;
             }
-        }
-
-        private static List<Tuple<string, System.Drawing.Color>> listOfNicksAndColors = new List<Tuple<string, System.Drawing.Color>>();
-
-        public System.Drawing.Color GetColorOfNick(string nick)
-        {
-            var user = listOfNicksAndColors.FirstOrDefault(p => p.Item1 == nick);
-
-            if (user == null)
-            {
-                var random = new Random();
-                //not to light, and not to dark
-                user = new Tuple<string, System.Drawing.Color>(nick, System.Drawing.Color.FromArgb(255, (byte)random.Next(30, 215), (byte)random.Next(30, 215), (byte)random.Next(30, 215)));
-                listOfNicksAndColors.Add(user);
-            }
-            return user.Item2;
         }
 
         //from so
@@ -223,6 +214,10 @@ namespace b3dteam_app.View
             box.SelectionColor = box.ForeColor;
         }
 
+        #endregion
+
+        #region Logging
+        private static bool _MessageReceivedSubscribed = false;
         private static bool _OnClientStatusChangedSubscribed = false;
 
         private async void button_Login_Click(object sender, RoutedEventArgs e)
@@ -284,7 +279,7 @@ namespace b3dteam_app.View
                 ball3DServer.AllChannels
                     .Where(p => p.Type == Discord.ChannelType.Text && p.IsPrivate == false)
                         .ToList()
-                            .ForEach(p => ListOfServers.Add(new Model.Server { Name = p.Name, Id = p.Id, MuteText = CheckIfChannelIsMuted(p.Name) ? "Unmute" : "Mute" }));
+                            .ForEach(p => ListOfServers.Add(new Model.Server { Name = p.Name, Id = p.Id, MuteText = CheckIfChannelIsMuted(p.Name) ? "Unmute" : "Mute", UnreadedMessages = "0" }));
 
                 listview_Servers.ItemsSource = ListOfServers;
                 listview_Servers.SelectedItem = ListOfServers.First(p => p.Name == "global");
@@ -306,33 +301,122 @@ namespace b3dteam_app.View
             }
 
         }
+        #endregion
 
-        private static bool _MessageReceivedSubscribed = false;
-
+        #region Recieving message
         private void _DiscordClient_MessageReceived(object sender, Discord.MessageEventArgs e)
         {
-            this.Dispatcher.Invoke(
-                () =>
+            this.Dispatcher.Invoke( () =>
                 {
                     if ((listview_Servers.SelectedItem as Model.Server).Name == e.Channel.Name)
                     {
                         AddMessage(e.Message);
                     }
 
-                    if (e.User.Name != _DiscordClient.CurrentUser.Name && !CheckIfChannelIsMuted(e.Channel.Name))
+                    else if(e.Channel.Users.Count() == 2) // private mesage
+                    {
+                        int numOfUnreadedMessages = SetUnreadedMessageStatus(e.Channel.Name, true, true);
+                        ChatUtilities.PrivateMessage.AddPrivateChannelIfNeccessary(new Model.Server { Id = e.Channel.Id, MuteText = "", Name = e.Channel.Name, UnreadedMessages = $"{numOfUnreadedMessages}" });
+                        Model.NotyficationHelper.SendMessage($"Private Message", $"{e.User.Name}: {(e.Message.Attachments.Length > 0 ? "Sends a file" : e.Message.Text)}");
+                    }
+                    else if (e.User.Name != _DiscordClient.CurrentUser.Name && !CheckIfChannelIsMuted(e.Channel.Name))
                     {
                         //notyify about received message
+                        SetUnreadedMessageStatus(e.Channel.Name);
                         Model.NotyficationHelper.SendMessage($"{e.Channel.Name}", $"{e.User.Name}: {(e.Message.Attachments.Length > 0 ? "Sends a file" : e.Message.Text)}");
                     }
                 });
         }
+        #endregion
 
+        #region Setting a message unreaded
+
+        private List<Tuple<Grid, string>> _ListOfGridsInServersName = new List<Tuple<Grid, string>>();
+
+        public int SetUnreadedMessageStatus(string channelName, bool add = true, bool isPrivateMessage = false, int numOfPrivateMessagesReaded = 0)
+        {
+            if(isPrivateMessage)
+            {
+                TextBlock textblockOfUnreadedPrivateMessages = button_PrivateMessages_UnreadedMessages_Grid.Children[0] as TextBlock;
+
+                int numOfUnreadedPrivateMessages = -1;
+
+                try
+                {
+                    numOfUnreadedPrivateMessages = int.Parse(textblockOfUnreadedPrivateMessages.Text);
+                }
+                catch
+                {
+                    numOfUnreadedPrivateMessages = 0;
+                }
+
+                if(add)
+                {
+                    numOfUnreadedPrivateMessages++;
+                }
+                else
+                {
+                    numOfUnreadedPrivateMessages -= numOfPrivateMessagesReaded;
+                }
+
+                if(numOfUnreadedPrivateMessages <= 0)
+                {
+                    button_PrivateMessages_UnreadedMessages_Grid.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    button_PrivateMessages_UnreadedMessages_Grid.Visibility = Visibility.Visible;
+                }
+
+                textblockOfUnreadedPrivateMessages.Text = $"{numOfUnreadedPrivateMessages}";
+                return numOfUnreadedPrivateMessages;
+            }
+            var gridWithText = _ListOfGridsInServersName.FirstOrDefault(p => p.Item2 == channelName);
+
+            if (gridWithText == null)
+            {
+                foreach (var grid in FindVisualChildren<Grid>(this))
+                {
+                    if (grid.Children.Count == 4 && (grid.Children[1] is TextBlock) && (grid.Children[1] as TextBlock).Text == channelName)
+                    {
+                        SetUnreadedMessageStatusAtGrid(grid, add);
+                        _ListOfGridsInServersName.Add(new Tuple<Grid, string>(grid, channelName));
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                SetUnreadedMessageStatusAtGrid(gridWithText.Item1, add);
+            }
+
+            return -1;
+        }
+
+        private void SetUnreadedMessageStatusAtGrid(Grid grid, bool add = true)
+        {
+            var gridWithTextBlockOfMessagesCount = (grid.Children[2] as Grid);
+            var channel = ((grid.Children[3] as Button).DataContext as Model.Server);
+
+            int numOfUnreadedMessages = add ? (int.Parse(channel.UnreadedMessages) + 1) : 0;
+
+            gridWithTextBlockOfMessagesCount.Visibility = numOfUnreadedMessages == 0 ? Visibility.Collapsed : Visibility.Visible;
+
+            channel.UnreadedMessages = $"{numOfUnreadedMessages}";
+            (gridWithTextBlockOfMessagesCount.Children[0] as TextBlock).Text = $"{numOfUnreadedMessages}";
+        }
+
+        #endregion
+
+        #region Visible Changes
         private void ShowChatAndServers()
         {
             textbox_Chat.Visibility = Visibility.Visible;
             listview_Servers.Visibility = Visibility.Visible;
             textbox_Message.Visibility = Visibility.Visible;
             stackpanel_Message.Visibility = Visibility.Visible;
+            button_PrivateMessages.Visibility = Visibility.Visible;
+            button_OnlineUsers.Visibility = Visibility.Visible;
         }
 
         private void HideChatAndServers()
@@ -340,6 +424,8 @@ namespace b3dteam_app.View
             textbox_Chat.Visibility = Visibility.Collapsed;
             listview_Servers.Visibility = Visibility.Collapsed;
             stackpanel_Message.Visibility = Visibility.Collapsed;
+            button_PrivateMessages.Visibility = Visibility.Collapsed;
+            button_OnlineUsers.Visibility = Visibility.Collapsed;
         }
         private void ChangeButtonsVisibility(Visibility visible)
         {
@@ -350,11 +436,9 @@ namespace b3dteam_app.View
             button_Register.Visibility = visible;
             checkbox_AutoLogin.Visibility = visible;
         }
+        #endregion
 
-        private void button_Register_Click(object sender, RoutedEventArgs e)
-        {
-            System.Diagnostics.Process.Start("http://ball3d.com/chat");
-        }
+        #region Muting server
 
         private void button_ServerMute(object sender, RoutedEventArgs e)
         {
@@ -377,58 +461,17 @@ namespace b3dteam_app.View
             Properties.Settings.Default.Save();
         }
 
-        private bool CheckIfChannelIsMuted(string channelName)
-        {
-            return Properties.Settings.Default.muttedservers.Contains($"{channelName}#");
-        }
+        #endregion
 
-        private async void button_SendFile_Click(object sender, RoutedEventArgs e)
-        {
-            var ofd = new Microsoft.Win32.OpenFileDialog() { Filter = "All files|*.*" };
-
-            var result = ofd.ShowDialog();
-
-            if (result == false)
-            {
-                return;
-            }
-
-            button_SendFile.IsEnabled = false;
-            button_SendFile.Content = "Sending...";
-
-            var message = await SendFile(ofd.FileName);
-
-            if (message == null)
-            {
-                MessageBox.Show("There was problem with sending a file. Check if file size is less than 8.00 Mb", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-
-            button_SendFile.IsEnabled = true;
-            button_SendFile.Content = "Send file";
-        }
-
-        private async Task<Discord.Message> SendFile(string path)
-        {
-            isSending = true;
-            var result = await GetBall3DServer().AllChannels.First(p => (listview_Servers.SelectedItem as Model.Server).Name == p.Name).SendFile(path);
-            isSending = false;
-            return result;
-        }
-
-        private async Task<List<Discord.Message>> DownloadLastMessages(ulong channelId)
-        {
-            isSending = true;
-            var result = (await GetBall3DServer().AllChannels.First(p => p.Id == channelId).DownloadMessages()).ToList();
-            isSending = false;
-            return result;
-        }
+        #region Sending
 
         private async void textbox_Message_KeyUp(object sender, KeyEventArgs e)
         {
-            if(isSending)
+            if (isSending)
             {
                 return;
             }
+
             if (e.Key == Key.Enter && (Keyboard.Modifiers & ModifierKeys.Shift) != ModifierKeys.Shift && !isSending)
             {
                 if (textbox_Message.Text.Trim().Length == 0)
@@ -465,5 +508,154 @@ namespace b3dteam_app.View
                 }
             }
         }
+
+        private async void button_SendFile_Click(object sender, RoutedEventArgs e)
+        {
+            var ofd = new Microsoft.Win32.OpenFileDialog() { Filter = "All files|*.*" };
+
+            var result = ofd.ShowDialog();
+
+            if (result == false)
+            {
+                return;
+            }
+
+            button_SendFile.IsEnabled = false;
+            button_SendFile.Content = "Sending...";
+
+            var message = await SendFile(ofd.FileName);
+
+            if (message == null)
+            {
+                MessageBox.Show("There was problem with sending a file. Check if file size is less than 8.00 Mb", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+
+            button_SendFile.IsEnabled = true;
+            button_SendFile.Content = "Send file";
+        }
+
+        private async Task<Discord.Message> SendFile(string path)
+        {
+            isSending = true;
+            var result = await GetBall3DServer().AllChannels.First(p => (listview_Servers.SelectedItem as Model.Server).Name == p.Name).SendFile(path);
+            isSending = false;
+            return result;
+        }
+
+        #endregion
+
+        #region DownloadingMessages
+        private async Task<List<Discord.Message>> DownloadLastMessages(ulong channelId)
+        {
+            isSending = true;
+            var result = (await GetBall3DServer().AllChannels.First(p => p.Id == channelId).DownloadMessages()).ToList();
+            isSending = false;
+            return result;
+        }
+        #endregion
+
+        #region Register
+        private void button_Register_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Process.Start("http://ball3d.com/chat");
+        }
+
+        #endregion
+
+        #region Utilities
+
+        public void ResetPage()
+        {
+            _DiscordClient = new Discord.DiscordClient(); ;
+            ListOfServers = new ObservableCollection<Model.Server>();
+            textbox_Login.Text = helper.User.ClientUser.email;
+            GetRichTextBox.Text = "";
+            ChangeButtonsVisibility(Visibility.Visible);
+            HideChatAndServers();
+            button_Login.Content = "Login";
+            button_Login.IsEnabled = true;
+        }
+
+        private static List<Tuple<string, System.Drawing.Color>> listOfNicksAndColors = new List<Tuple<string, System.Drawing.Color>>();
+
+        public System.Drawing.Color GetColorOfNick(string nick)
+        {
+            var user = listOfNicksAndColors.FirstOrDefault(p => p.Item1 == nick);
+
+            if (user == null)
+            {
+                var random = new Random();
+                //not to light, and not to dark
+                user = new Tuple<string, System.Drawing.Color>(nick, System.Drawing.Color.FromArgb(255, (byte)random.Next(30, 215), (byte)random.Next(30, 215), (byte)random.Next(30, 215)));
+                listOfNicksAndColors.Add(user);
+            }
+            return user.Item2;
+        }
+
+        private bool CheckIfChannelIsMuted(string channelName)
+        {
+            return Properties.Settings.Default.muttedservers.Contains($"{channelName}#");
+        }
+
+        public static IEnumerable<T> FindVisualChildren<T>(DependencyObject depObj) where T : DependencyObject
+        {
+            if (depObj != null)
+            {
+                for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+                {
+                    DependencyObject child = VisualTreeHelper.GetChild(depObj, i);
+
+                    if (child != null && child is T)
+                        yield return (T)child;
+
+                    foreach (T childOfChild in FindVisualChildren<T>(child))
+                        yield return childOfChild;
+                }
+            }
+        }
+        #endregion
+
+        #region Private messages
+
+        private ChatUtilities.PrivateMessage _PrivateMessagesWindow = null;
+        private void button_PrivateMessages_Click(object sender, RoutedEventArgs e)
+        {
+            if (_PrivateMessagesWindow == null)
+            {
+                var privateMessagesWindow = new ChatUtilities.PrivateMessage();
+
+                privateMessagesWindow.Closed += (s, f) =>
+                {
+                    _PrivateMessagesWindow = null;
+                };
+
+                _PrivateMessagesWindow = privateMessagesWindow;
+                privateMessagesWindow.Show();
+            }
+            else
+            {
+                _PrivateMessagesWindow.Show();
+            }
+        }
+        #endregion
+
+        #region Show online users
+        private ChatUtilities.OnlineUsers _OnlineUsersWindow = null;
+        private void button_OnlineUsers_Click(object sender, RoutedEventArgs e)
+        {
+            if (_OnlineUsersWindow == null)
+            {
+                var onlineUsersWindow = new ChatUtilities.OnlineUsers();
+
+                onlineUsersWindow.Closed += (s, f) =>
+                {
+                    _OnlineUsersWindow = null;
+                };
+
+                _OnlineUsersWindow = onlineUsersWindow;
+                onlineUsersWindow.Show();
+            }
+        }
+        #endregion
     }
 }

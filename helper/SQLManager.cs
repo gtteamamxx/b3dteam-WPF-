@@ -175,7 +175,6 @@ namespace helper
                     await SqlConnection.OpenAsync();
                     var result = await command.ExecuteScalarAsync();
                     SqlConnection.Close();
-
                     return (string)result == login;
                 }
             }
@@ -198,7 +197,6 @@ namespace helper
                     await SqlConnection.OpenAsync();
                     var result = await command.ExecuteScalarAsync();
                     SqlConnection.Close();
-
                     return (string)result == email;
                 }
             }
@@ -261,6 +259,7 @@ namespace helper
                 }
                 catch (Exception ex)
                 {
+                    SqlConnection.Close();
                     MessageBox.Show("Błąd podczas pobierania raw HTML" + Environment.NewLine + ex.Message);
                     return null;
                 }
@@ -285,6 +284,7 @@ namespace helper
                 }
                 catch (Exception ex)
                 {
+                    SqlConnection.Close();
                     MessageBox.Show("Błąd podczas wysyłania żądania raw HTML" + Environment.NewLine + ex.Message);
                     return false;
                 }

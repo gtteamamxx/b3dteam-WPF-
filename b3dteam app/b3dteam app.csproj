@@ -100,11 +100,18 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Model\ChatUser.cs" />
     <Compile Include="Model\Message.cs" />
     <Compile Include="Model\NotyficationHelper.cs" />
     <Compile Include="Model\Server.cs" />
     <Compile Include="View\Chat.xaml.cs">
       <DependentUpon>Chat.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\ChatUtilities\OnlineUsers.xaml.cs">
+      <DependentUpon>OnlineUsers.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\ChatUtilities\PrivateMessage.xaml.cs">
+      <DependentUpon>PrivateMessage.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Events.xaml.cs">
       <DependentUpon>Events.xaml</DependentUpon>
@@ -140,6 +147,14 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="View\Chat.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\ChatUtilities\OnlineUsers.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\ChatUtilities\PrivateMessage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -200,7 +215,10 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Images\status_offine.png" />
+    <Resource Include="Images\status_online.png" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\Desktop\SmithHtmlEditor\SmithHtmlEditor.csproj">
       <Project>{84badda1-ab3a-4064-b87e-178d7446901d}</Project>

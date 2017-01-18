@@ -92,15 +92,31 @@
                       VerticalAlignment="Center">
 
                 <ListView.ItemTemplate>
-                    <DataTemplate DataType="Model:Server">
+                    <DataTemplate DataType="Model:Server" x:Uid="">
                         <Grid Width="180">
+                            
                             <TextBlock Foreground="LightGray">#</TextBlock>
+                            
                             <TextBlock Foreground="Gray"
                                        Margin="10,0,0,0"
                                        Width="140"
                                        HorizontalAlignment="Left"
                                        Text="{Binding Name}"
                                        TextWrapping="Wrap"/>
+
+                            <Grid Height="15"
+                                  Width="15"
+                                  HorizontalAlignment="Right"
+                                  Margin="0,0,50,0"
+                                  Background="Red"
+                                  Visibility="Collapsed">
+
+                                <TextBlock Text="{Binding UnreadedMessages}" 
+                                           Foreground="White"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+                            
                             <Button HorizontalAlignment="Right" 
                                     Height="20"
                                     DataContext="{Binding}"
@@ -149,5 +165,45 @@
                 </StackPanel>
             </StackPanel>
         </StackPanel>
+
+        <StackPanel Width="70"
+                    HorizontalAlignment="Right"
+                    Margin="13,10,3,10">
+
+            <Button Height="40"
+                    Name="button_OnlineUsers"
+                    Click="button_OnlineUsers_Click"
+                    Visibility="Collapsed">
+                <TextBlock TextWrapping="Wrap"
+                           Text="See who's online" />
+            </Button>
+
+            <Button Height="40"
+                    Margin="0,20,0,0"
+                    Name="button_PrivateMessages"
+                    Click="button_PrivateMessages_Click"
+                    Visibility="Collapsed">
+
+                <Grid>
+                    <Grid Width="15"
+                          Height="15"
+                          Background="Red" 
+                          Margin="39,3,2,19"
+                          Name="button_PrivateMessages_UnreadedMessages_Grid"
+                          Visibility="Collapsed">
+                        
+                        <TextBlock Foreground="White"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Margin="0,-1,0,0" />
+                    </Grid>
+                    <TextBlock TextWrapping="Wrap"
+                            Text="Private messages" />
+                </Grid>
+
+            </Button>
+
+        </StackPanel>
+                    
     </Grid>
 </UserControl>

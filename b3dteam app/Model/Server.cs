@@ -16,6 +16,6 @@ namespace b3dteam_app.Model
         public SolidColorBrush MuteButtonColor => MuteText.Contains("Un") ? 
                     new SolidColorBrush(new System.Windows.Media.Color { A = 50, R = 255 }) : 
                     new SolidColorBrush(new System.Windows.Media.Color { A = 50, G = 255 });
-
+        public string UnreadedMessages { get; set; }
     }
 }
