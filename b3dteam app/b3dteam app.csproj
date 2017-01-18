@@ -113,6 +113,9 @@
     <Compile Include="View\ChatUtilities\PrivateMessage.xaml.cs">
       <DependentUpon>PrivateMessage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\ChatUtilities\PrivateMessageUserControl.xaml.cs">
+      <DependentUpon>PrivateMessageUserControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Events.xaml.cs">
       <DependentUpon>Events.xaml</DependentUpon>
     </Compile>
@@ -155,6 +158,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\ChatUtilities\PrivateMessage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\ChatUtilities\PrivateMessageUserControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

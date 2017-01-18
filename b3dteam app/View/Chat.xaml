@@ -142,6 +142,7 @@
                                     DetectUrls="True"
                                     WordWrap="False"
                                     ZoomFactor="1.2"
+                                    Name="public"
                                     ScrollBars="ForcedBoth">
                     </wf:RichTextBox>
                 </WindowsFormsHost>

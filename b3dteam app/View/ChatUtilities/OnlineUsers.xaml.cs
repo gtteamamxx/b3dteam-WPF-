@@ -130,5 +130,25 @@ namespace b3dteam_app.View.ChatUtilities
 
             RefreshTable(textbox_FindUser.Text.ToLower());
         }
+
+        private async void listview_Users_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if(listview_Users.SelectedItem == null)
+            {
+                return;
+            }
+
+            var userName = ((listview_Users.SelectedItem as StackPanel).Children[0] as TextBlock).Text;
+
+            var result = MessageBox.Show($"Do you want to send private message to user: '{userName}'?", "Private message", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                Discord.User user = Chat.GetBall3DServer().Users.First(p => p.Name == userName);
+                var privateChannel = await user.CreatePMChannel();
+                PrivateMessage.AddPrivateChannelIfNeccessary(new Server { Id = privateChannel.Id, Name = privateChannel.Name, UnreadedMessages = "", MuteText = "" });
+                MessageBox.Show("User was added to Private Message list. If you already have it opened, then close it and open again.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
     }
 }

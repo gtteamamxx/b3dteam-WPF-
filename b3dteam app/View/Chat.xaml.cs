@@ -63,75 +63,94 @@ namespace b3dteam_app.View
             }
 
             #region Attachment Click
-            GetRichTextBox.MouseClick += (a, e) =>
+            GetRichTextBox.MouseClick += GetRichTextBox_MouseClick;
+
+            
+        }
+
+        public static void GetRichTextBox_MouseClick(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            var richTextBox = sender as System.Windows.Forms.RichTextBox;
+            var lineNumber = richTextBox.Text.Substring(0, richTextBox.SelectionStart).Count(chr => chr == '\n');
+
+            if(richTextBox.Lines.Length == 0)
             {
-                var lineNumber = GetRichTextBox.Text.Substring(0, GetRichTextBox.SelectionStart).Count(chr => chr == '\n');
-                var text = GetRichTextBox.Lines[lineNumber];
+                return;
+            }
 
-                if (text.Contains("Click here to check attachments#"))
+            var text = richTextBox.Lines[lineNumber];
+
+            if (text.Contains("Click here to check attachments#"))
+            {
+                ulong idOfMessage = 0;
+
+                if (ulong.TryParse(text.Split('#')[1], out idOfMessage))
                 {
-                    ulong idOfMessage = 0;
+                    Discord.Message message = null;
 
-                    if (ulong.TryParse(text.Split('#')[1], out idOfMessage))
+                    if (richTextBox.Name == "public")
                     {
-                        var message = GetBall3DServer().AllChannels.First(p => (listview_Servers.SelectedItem as Model.Server).Name == p.Name).GetMessage(idOfMessage);
-
-                        if (message.Attachments.Length == 0)
-                        {
-                            MessageBox.Show("Error occured", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                            return;
-                        }
-                        var window = new Window()
-                        {
-                            Title = message.Attachments[0].Filename,
-                            Width = message.Attachments[0].Width == null ? 300 : (double)message.Attachments[0].Width,
-                            Height = message.Attachments[0].Height == null ? 300 : (double)message.Attachments[0].Height,
-                        };
-
-                        if (message.Attachments[0].Width != null)
-                        {
-                            window.Content = new Image() { Source = new BitmapImage(new Uri(message.Attachments[0].Url)) };
-                        }
-                        else
-                        {
-                            var grid = new Grid();
-
-                            grid.Children.Add(new TextBlock()
-                            {
-                                Text = $"File: {message.Attachments[0].Filename} {message.Attachments[0].Size / 1024 / 1024} Mb",
-                                Margin = new Thickness(10),
-                                VerticalAlignment = VerticalAlignment.Top,
-                                HorizontalAlignment = HorizontalAlignment.Center
-                            });
-
-                            var button = new Button()
-                            {
-                                HorizontalAlignment = HorizontalAlignment.Center,
-                                VerticalAlignment = VerticalAlignment.Center,
-                                Content = "Download this file"
-                            };
-
-                            button.Click += (s, f) =>
-                            {
-                                System.Diagnostics.Process.Start(message.Attachments[0].Url);
-                            };
-                            grid.Children.Add(button);
-
-                            window.Content = grid;
-                        }
-
-                        window.ShowDialog();
+                        message = GetBall3DServer().AllChannels.First(p => (gui.listview_Servers.SelectedItem as Model.Server).Name == p.Name).GetMessage(idOfMessage);
                     }
                     else
                     {
-                        MessageBox.Show("Bad message", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        var server = ChatUtilities.PrivateMessage.gui.listview_PrivateChannels.SelectedItem as Model.Server;
+                        message = _DiscordClient.GetChannel(server.Id).GetMessage(idOfMessage);
                     }
+
+                    if (message.Attachments.Length == 0)
+                    {
+                        MessageBox.Show("Error occured", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+                    var window = new Window()
+                    {
+                        Title = message.Attachments[0].Filename,
+                        Width = message.Attachments[0].Width == null ? 300 : (double)message.Attachments[0].Width,
+                        Height = message.Attachments[0].Height == null ? 300 : (double)message.Attachments[0].Height,
+                    };
+
+                    if (message.Attachments[0].Width != null)
+                    {
+                        window.Content = new Image() { Source = new BitmapImage(new Uri(message.Attachments[0].Url)) };
+                    }
+                    else
+                    {
+                        var grid = new Grid();
+
+                        grid.Children.Add(new TextBlock()
+                        {
+                            Text = $"File: {message.Attachments[0].Filename} {message.Attachments[0].Size / 1024 / 1024} Mb",
+                            Margin = new Thickness(10),
+                            VerticalAlignment = VerticalAlignment.Top,
+                            HorizontalAlignment = HorizontalAlignment.Center
+                        });
+
+                        var button = new Button()
+                        {
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            VerticalAlignment = VerticalAlignment.Center,
+                            Content = "Download this file"
+                        };
+
+                        button.Click += (s, f) =>
+                        {
+                            System.Diagnostics.Process.Start(message.Attachments[0].Url);
+                        };
+                        grid.Children.Add(button);
+
+                        window.Content = grid;
+                    }
+
+                    window.ShowDialog();
                 }
-
-            };
-
-            #endregion
+                else
+                {
+                    MessageBox.Show("Bad message", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
+        #endregion
 
         #region Changing server
         private async void Listview_Servers_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -156,10 +175,9 @@ namespace b3dteam_app.View
             var messagesFromChannel = await DownloadLastMessages(channelId);
 
             messagesFromChannel.Reverse();
-            messagesFromChannel.ToList().ForEach(p => AddMessage(p));
+            messagesFromChannel.ToList().ForEach(p => AddMessage(GetRichTextBox, p));
 
             SetUnreadedMessageStatus(selectedItem.Name, false);
-            System.Windows.Forms.RichTextBox a = new System.Windows.Forms.RichTextBox();
         }
         #endregion
 
@@ -167,51 +185,49 @@ namespace b3dteam_app.View
 
         private DateTime _LastMessageTime = new DateTime();
 
-        private void AddMessage(Discord.Message message)
+        public static void AddMessage(System.Windows.Forms.RichTextBox richTextBox, Discord.Message message)
         {
             var author = message.User == null ? "Unknown user" : message.User.Name;
 
-            CheckLastMessageTimeAndAddDateLineIfNeeded(message);
-            GetRichTextBox.AppendText($"{message.Timestamp.ToShortTimeString()}");
-            AppendTextToRichTextBoxForms($" {author}:", GetColorOfNick(author), false);
+            gui.CheckLastMessageTimeAndAddDateLineIfNeeded(richTextBox, message);
+            richTextBox.AppendText($"{message.Timestamp.ToShortTimeString()}");
+            gui.AppendTextToRichTextBoxForms(richTextBox, $" {author}:", gui.GetColorOfNick(author), false);
 
             bool hasAttachments = message.Attachments.Length > 0;
 
             if (hasAttachments)
             {
-                AppendTextToRichTextBoxForms($" Click here to check attachments#{message.Id}", System.Drawing.Color.Red, false);
+                gui.AppendTextToRichTextBoxForms(richTextBox, $" Click here to check attachments#{message.Id}", System.Drawing.Color.Red, false);
             }
 
-            GetRichTextBox.AppendText($" {message.Text}\n");
-            GetRichTextBox.SelectionStart = GetRichTextBox.Text.Length;
-            GetRichTextBox.ScrollToCaret();
+            richTextBox.AppendText($" {message.Text}\n");
+            richTextBox.SelectionStart = richTextBox.Text.Length;
+            richTextBox.ScrollToCaret();
         }
 
-        private void CheckLastMessageTimeAndAddDateLineIfNeeded(Discord.Message message)
+        private void CheckLastMessageTimeAndAddDateLineIfNeeded(System.Windows.Forms.RichTextBox richTextBox, Discord.Message message)
         {
             if (_LastMessageTime.Day != message.Timestamp.Day)
             {
-                AppendTextToRichTextBoxForms($"=================={message.Timestamp.ToShortDateString()}==================", System.Drawing.Color.Red, true);
+                AppendTextToRichTextBoxForms(richTextBox, $"=================={message.Timestamp.ToShortDateString()}==================", System.Drawing.Color.Red, true);
                 _LastMessageTime = message.Timestamp;
             }
         }
 
         //from so
-        public void AppendTextToRichTextBoxForms(string text, System.Drawing.Color color, bool AddNewLine = false)
+        public void AppendTextToRichTextBoxForms(System.Windows.Forms.RichTextBox richTextBox, string text, System.Drawing.Color color, bool AddNewLine = false)
         {
-            var box = GetRichTextBox;
-
             if (AddNewLine)
             {
                 text += Environment.NewLine;
             }
 
-            box.SelectionStart = box.TextLength;
-            box.SelectionLength = 0;
+            richTextBox.SelectionStart = richTextBox.TextLength;
+            richTextBox.SelectionLength = 0;
 
-            box.SelectionColor = color;
-            box.AppendText(text);
-            box.SelectionColor = box.ForeColor;
+            richTextBox.SelectionColor = color;
+            richTextBox.AppendText(text);
+            richTextBox.SelectionColor = richTextBox.ForeColor;
         }
 
         #endregion
@@ -222,9 +238,9 @@ namespace b3dteam_app.View
 
         private async void button_Login_Click(object sender, RoutedEventArgs e)
         {
-            var defaultText = (sender as Button).Content as string;
-            (sender as Button).IsEnabled = false;
-            (sender as Button).Content = "Logging...";
+            var defaultText = button_Login.Content as string;
+            button_Login.IsEnabled = false;
+            button_Login.Content = "Logging...";
 
             try
             {
@@ -233,8 +249,8 @@ namespace b3dteam_app.View
             catch
             {
                 MessageBox.Show("Bad login or password", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                (sender as Button).IsEnabled = true;
-                (sender as Button).Content = defaultText;
+                button_Login.IsEnabled = true;
+                button_Login.Content = defaultText;
                 return;
             }
 
@@ -243,8 +259,8 @@ namespace b3dteam_app.View
             if (userServers == null)
             {
                 MessageBox.Show("Your profile doesn't have any servers. Check that you are connected to Ball3D Chat on Discord", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                (sender as Button).IsEnabled = true;
-                (sender as Button).Content = defaultText;
+                button_Login.IsEnabled = true;
+                button_Login.Content = defaultText;
                 return;
             }
 
@@ -294,8 +310,8 @@ namespace b3dteam_app.View
             }
             else
             {
-                (sender as Button).IsEnabled = true;
-                (sender as Button).Content = defaultText;
+                button_Login.IsEnabled = true;
+                button_Login.Content = defaultText;
                 MessageBox.Show($"Your profile isn't invited to \"Ball 3D\" server, or \"#global\" channel{Environment.NewLine}Click button below", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -306,26 +322,45 @@ namespace b3dteam_app.View
         #region Recieving message
         private void _DiscordClient_MessageReceived(object sender, Discord.MessageEventArgs e)
         {
-            this.Dispatcher.Invoke( () =>
-                {
-                    if ((listview_Servers.SelectedItem as Model.Server).Name == e.Channel.Name)
-                    {
-                        AddMessage(e.Message);
-                    }
+            this.Dispatcher.Invoke(() =>
+               {
+                   if ((listview_Servers.SelectedItem as Model.Server).Name == e.Channel.Name)
+                   {
+                       AddMessage(GetRichTextBox, e.Message);
+                   }
+                   else if (e.Channel.Users.Count() == 2) // private mesage
+                   {
+                       if(ChatUtilities.PrivateMessage.gui != null && ChatUtilities.PrivateMessage.gui.listview_PrivateChannels.SelectedItem as Model.Server != null)
+                       {
+                           var selectedItem = ChatUtilities.PrivateMessage.gui.listview_PrivateChannels.SelectedItem as Model.Server;
 
-                    else if(e.Channel.Users.Count() == 2) // private mesage
-                    {
-                        int numOfUnreadedMessages = SetUnreadedMessageStatus(e.Channel.Name, true, true);
-                        ChatUtilities.PrivateMessage.AddPrivateChannelIfNeccessary(new Model.Server { Id = e.Channel.Id, MuteText = "", Name = e.Channel.Name, UnreadedMessages = $"{numOfUnreadedMessages}" });
-                        Model.NotyficationHelper.SendMessage($"Private Message", $"{e.User.Name}: {(e.Message.Attachments.Length > 0 ? "Sends a file" : e.Message.Text)}");
-                    }
-                    else if (e.User.Name != _DiscordClient.CurrentUser.Name && !CheckIfChannelIsMuted(e.Channel.Name))
-                    {
-                        //notyify about received message
-                        SetUnreadedMessageStatus(e.Channel.Name);
-                        Model.NotyficationHelper.SendMessage($"{e.Channel.Name}", $"{e.User.Name}: {(e.Message.Attachments.Length > 0 ? "Sends a file" : e.Message.Text)}");
-                    }
-                });
+                           if(selectedItem.Name == e.Channel.Name)
+                           {
+                               AddMessage(ChatUtilities.PrivateMessage.GetRichTextBox, e.Message);
+                               return;
+                           }
+                       }
+                       int numOfUnreadedMessages = SetUnreadedMessageStatus(e.Channel.Name, true, true);
+
+                       var server = new Model.Server()
+                       {
+                           Id = e.Channel.Id,
+                           MuteText = string.Empty,
+                           Name = e.Channel.Name,
+                           UnreadedMessages = numOfUnreadedMessages.ToString()
+                       };
+
+                       ChatUtilities.PrivateMessage.AddPrivateChannelIfNeccessary(server);
+
+                       Model.NotyficationHelper.SendMessage($"Private Message", $"{e.User.Name}: {(e.Message.Attachments.Length > 0 ? "Sends a file" : e.Message.Text)}");
+                   }
+                   else if (e.User.Name != _DiscordClient.CurrentUser.Name && !CheckIfChannelIsMuted(e.Channel.Name))
+                   {
+                       //notyify about received message
+                       SetUnreadedMessageStatus(e.Channel.Name);
+                       Model.NotyficationHelper.SendMessage($"{e.Channel.Name}", $"{e.User.Name}: {(e.Message.Attachments.Length > 0 ? "Sends a file" : e.Message.Text)}");
+                   }
+               });
         }
         #endregion
 
@@ -335,7 +370,7 @@ namespace b3dteam_app.View
 
         public int SetUnreadedMessageStatus(string channelName, bool add = true, bool isPrivateMessage = false, int numOfPrivateMessagesReaded = 0)
         {
-            if(isPrivateMessage)
+            if (isPrivateMessage)
             {
                 TextBlock textblockOfUnreadedPrivateMessages = button_PrivateMessages_UnreadedMessages_Grid.Children[0] as TextBlock;
 
@@ -350,7 +385,7 @@ namespace b3dteam_app.View
                     numOfUnreadedPrivateMessages = 0;
                 }
 
-                if(add)
+                if (add)
                 {
                     numOfUnreadedPrivateMessages++;
                 }
@@ -359,7 +394,7 @@ namespace b3dteam_app.View
                     numOfUnreadedPrivateMessages -= numOfPrivateMessagesReaded;
                 }
 
-                if(numOfUnreadedPrivateMessages <= 0)
+                if (numOfUnreadedPrivateMessages <= 0)
                 {
                     button_PrivateMessages_UnreadedMessages_Grid.Visibility = Visibility.Collapsed;
                 }
@@ -465,41 +500,62 @@ namespace b3dteam_app.View
 
         #region Sending
 
-        private async void textbox_Message_KeyUp(object sender, KeyEventArgs e)
+        public async void textbox_Message_KeyUp(object sender, KeyEventArgs e)
         {
-            if (isSending)
+            await textbox_Message_KeyUpped(sender, e);
+        }
+
+        public async static Task textbox_Message_KeyUpped(object sender, KeyEventArgs e)
+        {
+            TextBox textbox = ((sender as TextBox).Name.Contains("vate") ? ChatUtilities.PrivateMessage.gui.textbox_MessagePrivate : gui.textbox_Message);
+
+            bool isPrivate = textbox.Name.Contains("vate") ? true : false;
+
+            if (gui.isSending)
             {
                 return;
             }
 
-            if (e.Key == Key.Enter && (Keyboard.Modifiers & ModifierKeys.Shift) != ModifierKeys.Shift && !isSending)
+            if (e.Key == Key.Enter && (Keyboard.Modifiers & ModifierKeys.Shift) != ModifierKeys.Shift && !gui.isSending)
             {
-                if (textbox_Message.Text.Trim().Length == 0)
+                if (textbox.Text.Trim().Length == 0)
                 {
                     return;
                 }
 
-                var actualChannel = GetBall3DServer().AllChannels.First(p => (listview_Servers.SelectedItem as Model.Server).Name == p.Name);
-                isSending = true;
-                var message = await actualChannel.SendMessage(textbox_Message.Text);
-                isSending = false;
-                textbox_Message.Text = "";
+                Discord.Channel actualChannel = null;
+
+                if (!isPrivate)
+                {
+                    actualChannel = GetBall3DServer().AllChannels.First(p => (gui.listview_Servers.SelectedItem as Model.Server).Name == p.Name);
+                }
+                else
+                {
+                    var server = ChatUtilities.PrivateMessage.ListOfPrivateChannels.First(p => p.Item1.Id == (ChatUtilities.PrivateMessage.gui.listview_PrivateChannels.SelectedItem as Model.Server).Id);
+                    actualChannel = _DiscordClient.GetChannel(server.Item1.Id);
+                }
+
+                gui.isSending = true;
+                var message = await actualChannel.SendMessage(textbox.Text);
+                gui.isSending = false;
+                textbox.Text = "";
             }
 
             if (e.Key == Key.V && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
             {
-
                 if (Clipboard.GetFileDropList().Count > 0)
                 {
                     var file = Clipboard.GetFileDropList()[0];
 
-                    button_SendFile.IsEnabled = false;
-                    button_SendFile.Content = "Sending...";
+                    Button button = isPrivate ? ChatUtilities.PrivateMessage.gui.button_SendFile : gui.button_SendFile;
 
-                    var message = await SendFile(file);
+                    button.IsEnabled = false;
+                    button.Content = "Sending...";
 
-                    button_SendFile.IsEnabled = true;
-                    button_SendFile.Content = "Send file";
+                    var message = await gui.SendFile(button, file);
+
+                    button.IsEnabled = true;
+                    button.Content = "Send file";
 
                     if (message == null)
                     {
@@ -509,7 +565,11 @@ namespace b3dteam_app.View
             }
         }
 
-        private async void button_SendFile_Click(object sender, RoutedEventArgs e)
+        public async void button_SendFile_Click(object sender, RoutedEventArgs e)
+        {
+            await button_SendFile_Clicked(sender, e);
+        }
+        public async static Task button_SendFile_Clicked(object sender, RoutedEventArgs e)
         {
             var ofd = new Microsoft.Win32.OpenFileDialog() { Filter = "All files|*.*" };
 
@@ -519,36 +579,47 @@ namespace b3dteam_app.View
             {
                 return;
             }
+            var button = sender as Button;
 
-            button_SendFile.IsEnabled = false;
-            button_SendFile.Content = "Sending...";
+            button.IsEnabled = false;
+            button.Content = "Sending...";
 
-            var message = await SendFile(ofd.FileName);
+            var message = await gui.SendFile(button, ofd.FileName);
 
             if (message == null)
             {
                 MessageBox.Show("There was problem with sending a file. Check if file size is less than 8.00 Mb", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
-            button_SendFile.IsEnabled = true;
-            button_SendFile.Content = "Send file";
+            button.IsEnabled = true;
+            button.Content = "Send file";
         }
 
-        private async Task<Discord.Message> SendFile(string path)
+        private async Task<Discord.Message> SendFile(Button button, string path)
         {
+            Discord.Message result = null;
+
             isSending = true;
-            var result = await GetBall3DServer().AllChannels.First(p => (listview_Servers.SelectedItem as Model.Server).Name == p.Name).SendFile(path);
+            if (button == button_SendFile)
+            {
+                result = await GetBall3DServer().AllChannels.First(p => (listview_Servers.SelectedItem as Model.Server).Name == p.Name).SendFile(path);
+            }
+            else
+            {
+                result = await _DiscordClient.GetChannel((ChatUtilities.PrivateMessage.gui.listview_PrivateChannels.SelectedItem as Model.Server).Id).SendFile(path);
+            }
             isSending = false;
+
             return result;
         }
 
         #endregion
 
         #region DownloadingMessages
-        private async Task<List<Discord.Message>> DownloadLastMessages(ulong channelId)
+        public async Task<List<Discord.Message>> DownloadLastMessages(ulong channelId)
         {
             isSending = true;
-            var result = (await GetBall3DServer().AllChannels.First(p => p.Id == channelId).DownloadMessages()).ToList();
+            var result = (await _DiscordClient.GetChannel(channelId).DownloadMessages()).ToList();
             isSending = false;
             return result;
         }
@@ -640,21 +711,10 @@ namespace b3dteam_app.View
         #endregion
 
         #region Show online users
-        private ChatUtilities.OnlineUsers _OnlineUsersWindow = null;
         private void button_OnlineUsers_Click(object sender, RoutedEventArgs e)
         {
-            if (_OnlineUsersWindow == null)
-            {
-                var onlineUsersWindow = new ChatUtilities.OnlineUsers();
-
-                onlineUsersWindow.Closed += (s, f) =>
-                {
-                    _OnlineUsersWindow = null;
-                };
-
-                _OnlineUsersWindow = onlineUsersWindow;
-                onlineUsersWindow.Show();
-            }
+            var onlineUsersWindow = new ChatUtilities.OnlineUsers();
+            onlineUsersWindow.ShowDialog();
         }
         #endregion
     }

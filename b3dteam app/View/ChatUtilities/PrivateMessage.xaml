@@ -5,13 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:b3dteam_app.View.ChatUtilities"
         xmlns:model="clr-namespace:b3dteam_app.Model"
+        xmlns:wf="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
         mc:Ignorable="d"
+        ResizeMode="NoResize"
         Title="Private messages" 
-        Height="500" 
-        Width="700">
+        Height="510" 
+        Width="710">
     
     <Grid>
-
         <Grid.RowDefinitions>
             <RowDefinition Height="40" />
             <RowDefinition Height="*" />
@@ -22,33 +23,73 @@
         </Grid.ColumnDefinitions>
 
         <TextBlock Text="List of private messages:"
-                   HorizontalAlignment="Center"
+                   HorizontalAlignment="Left"
+                   Margin="10,0,0,0"
                    VerticalAlignment="Center"/>
 
+        <Button Name="button_NewMessage"
+                Width="80"
+                Content="New message"
+                Click="button_NewMessage_Click"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Right" />
+        
+        <TextBlock Text="If u got new private message from user which isn't on the list then close and open again this window."
+                   TextWrapping="Wrap"
+                   Foreground="Green"
+                   Grid.Column="1"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center" />
+        
         <ListView Name="listview_PrivateChannels"
-                  Grid.Row="1">
+                  Grid.Row="1"
+                  Margin="5">
 
             <ListView.ItemTemplate>
                 <DataTemplate DataType="model:Server">
-                    <Grid>
-                        <TextBlock Margin="10,0,0,0"
-                                   Text="{Binding Name}" 
-                                   DataContext="{Binding}"/>
-
-                        <Grid Background="Red"
-                              Margin="150,0,0,0"
-                              Width="15"
-                              Height="15"
-                              Visibility="Collapsed">
-                            
-                            <TextBlock Foreground="White"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       Text="{Binding UnreadedMessages}" />
-                        </Grid>
-                    </Grid>
+                    <local:PrivateMessageUserControl DataContext="{Binding}" />
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+
+        <StackPanel HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Grid.Row="1"
+                    Grid.Column="1">
+            
+            <WindowsFormsHost Name="textbox_Chat"
+                              Width="440"
+                              HorizontalAlignment="Left"
+                              Margin="10,0,0,0"
+                              Height="385"
+                              Visibility="Visible">
+
+                <wf:RichTextBox ReadOnly="True"
+                                DetectUrls="True"
+                                Name="private"
+                                WordWrap="False"
+                                ZoomFactor="1.2"
+                                ScrollBars="ForcedBoth">
+                </wf:RichTextBox>
+            </WindowsFormsHost>
+
+            <StackPanel Orientation="Horizontal"
+                        Width="450"
+                        Margin="10,10,0,0"
+                        Height="30"
+                        Name="stackpanel_Message"
+                        Visibility="Visible">
+
+                <TextBox Name="textbox_MessagePrivate"
+                         AcceptsReturn="True"
+                         Width="370"
+                         KeyUp="textbox_MessagePrivate_KeyUp"/>
+
+                <Button Name="button_SendFile"
+                        Click="button_SendFile_Click"
+                        Width="70"
+                        Content="Send file" />
+            </StackPanel>
+        </StackPanel>
     </Grid>
 </Window>

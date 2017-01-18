@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:b3dteam_app.View.ChatUtilities"
         xmlns:model="clr-namespace:b3dteam_app.Model"
         mc:Ignorable="d"
-        Title="Users / NOT WORK (API PROBLEM)" Height="500" Width="500">
+        Title="Users" Height="500" Width="500">
     <Grid>
         <StackPanel>
 
@@ -16,7 +16,8 @@
                      Text="Find user..."
                      VerticalContentAlignment="Center"/>
 
-            <ListView Name="listview_Users" />
+            <ListView Name="listview_Users"
+                      SelectionChanged="listview_Users_SelectionChanged"/>
         </StackPanel>
 
         <TextBlock HorizontalAlignment="Center"

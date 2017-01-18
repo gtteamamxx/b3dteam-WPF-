@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,8 +21,9 @@ namespace b3dteam_app.View.ChatUtilities
     /// </summary>
     public partial class PrivateMessage : Window
     {
-        public static ObservableCollection<Model.Server> ListOfPrivateChannels = new ObservableCollection<Model.Server>();
+        public static ObservableCollection<Tuple<Model.Server, PrivateMessageUserControl>> ListOfPrivateChannels = new ObservableCollection<Tuple<Model.Server, PrivateMessageUserControl>>();
         public static PrivateMessage gui;
+        public static System.Windows.Forms.RichTextBox GetRichTextBox => gui.textbox_Chat.Child as System.Windows.Forms.RichTextBox;
 
         public static void AddPrivateChannelIfNeccessary(Model.Server server)
         {
@@ -30,28 +32,44 @@ namespace b3dteam_app.View.ChatUtilities
                 return;
             }
 
-            var result = ListOfPrivateChannels.FirstOrDefault(p => p.Id == server.Id);
+            var result = ListOfPrivateChannels.FirstOrDefault(p => p.Item1.Id == server.Id);
 
-            if(result == null)
+            if (result == null)
             {
-                ListOfPrivateChannels.Add(server);
+                ListOfPrivateChannels.Add(new Tuple<Model.Server, PrivateMessageUserControl>(server, null));
             }
             else
             {
-                gui.CheckIfGridShouldBeHiden(server);
+                ListOfPrivateChannels[ListOfPrivateChannels.IndexOf(result)] = new Tuple<Model.Server, PrivateMessageUserControl>(server, result.Item2);
+                result.Item2.ChangeData(server);
             }
         }
 
+        public static void SetUserControlToChannel(PrivateMessageUserControl user, Model.Server server)
+        {
+            var result = ListOfPrivateChannels.FirstOrDefault(p => p.Item1.Id == server.Id);
+
+            if(result == null)
+            {
+                return;
+            }
+            else
+            {
+                ListOfPrivateChannels[ListOfPrivateChannels.IndexOf(result)] = new Tuple<Model.Server, PrivateMessageUserControl>(server, user);
+            }
+        }
         public PrivateMessage()
         {
             InitializeComponent();
             gui = this;
 
             this.Loaded += PrivateMessage_Loaded;
+            GetRichTextBox.MouseClick += Chat.GetRichTextBox_MouseClick;
             listview_PrivateChannels.SelectionChanged += Listview_PrivateChannels_SelectionChanged;
+
         }
 
-        private void Listview_PrivateChannels_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void Listview_PrivateChannels_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var selectedItem = listview_PrivateChannels.SelectedItem as Model.Server;
             int numOfUnreadedMessages = -1;
@@ -60,14 +78,22 @@ namespace b3dteam_app.View.ChatUtilities
             {
                 numOfUnreadedMessages = int.Parse(selectedItem.UnreadedMessages);
             }
-            catch {}
-            //ShowChat
-            
+            catch { }
+
+            var channelId = selectedItem.Id;
+
+            var messagesFromChannel = await Chat.gui.DownloadLastMessages(channelId);
+
+            messagesFromChannel.Reverse();
+            messagesFromChannel.ToList().ForEach(p => Chat.AddMessage(GetRichTextBox, p));
+
             if (numOfUnreadedMessages != -1)
             {
                 selectedItem.UnreadedMessages = "";
+                var result = ListOfPrivateChannels.FirstOrDefault(p => p.Item1.Id == selectedItem.Id);
+                ListOfPrivateChannels[ListOfPrivateChannels.IndexOf(result)] = new Tuple<Model.Server, PrivateMessageUserControl>(selectedItem, result.Item2);
+                result.Item2.ChangeData(selectedItem);
                 Chat.gui.SetUnreadedMessageStatus(selectedItem.Name, false, true, numOfUnreadedMessages);
-                CheckIfGridShouldBeHiden(selectedItem);
             }
         }
 
@@ -77,33 +103,31 @@ namespace b3dteam_app.View.ChatUtilities
 
             ListOfPrivateChannels.ToList().ForEach(p =>
             {
-                listview_PrivateChannels.Items.Add(p);
-                CheckIfGridShouldBeHiden(p);
+                listview_PrivateChannels.Items.Add(p.Item1);
             });
         }
 
-        private void CheckIfGridShouldBeHiden(Model.Server server)
+        private async void textbox_MessagePrivate_KeyUp(object sender, KeyEventArgs e)
         {
-            foreach (Grid grid in Chat.FindVisualChildren<Grid>(this))
-            {
-                if (grid.Children.Count == 2 && grid.Children[0] is TextBlock && grid.Children[1] is Grid)
-                {
-                    if ((grid.Children[0] as TextBlock).Text == server.Name)
-                    {
-                        if (string.IsNullOrEmpty(server.UnreadedMessages))
-                        {
-                            grid.Children[1].Visibility = Visibility.Collapsed;
-                            ((grid.Children[1] as Grid).Children[0] as TextBlock).Text = "";
-                        }
-                        else
-                        {
-                            grid.Children[1].Visibility = Visibility.Visible;
-                            ((grid.Children[1] as Grid).Children[0] as TextBlock).Text = $"{server.UnreadedMessages}";
-                        }
-                        ListOfPrivateChannels[ListOfPrivateChannels.IndexOf(ListOfPrivateChannels.First(p => p.Id == server.Id))] = server;
-                    }
-                }
-            }
+            await Chat.textbox_Message_KeyUpped(sender, e);
         }
+
+        private async void button_SendFile_Click(object sender, RoutedEventArgs e)
+        {
+            await Chat.button_SendFile_Clicked(sender, e);
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            gui = null;
+            base.OnClosing(e);
+        }
+
+        private void button_NewMessage_Click(object sender, RoutedEventArgs e)
+        {
+            var onlineUsersWindow = new OnlineUsers();
+            onlineUsersWindow.ShowDialog();
+        }
+
     }
 }

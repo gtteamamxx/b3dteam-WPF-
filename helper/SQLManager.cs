@@ -43,6 +43,7 @@ namespace helper
                 SqlConnectionStringBuilder sqlsb = new SqlConnectionStringBuilder();
 
 
+
                 _sqlConnection.ConnectionString = sqlsb.ConnectionString;
 
                 try
