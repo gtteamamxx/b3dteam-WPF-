@@ -14,7 +14,6 @@
             <RowDefinition />
             <RowDefinition />
             <RowDefinition />
-            <RowDefinition />
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
@@ -41,7 +40,27 @@
                   VerticalAlignment="Bottom"
                   HorizontalAlignment="Right"
                   Content="Toast" />
-        
+
+        <Button Name="button_Cancel"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Width="100"
+                Height="30"
+                Grid.Row="3"
+                Grid.Column="1"
+                Click="button_Cancel_Click">
+            Cancel
+        </Button>
+
+        <Button Name="button_Save"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Width="100"
+                Height="30"
+                Grid.Row="3"
+                Click="button_Save_Click">
+            Save
+        </Button>
         <Separator Grid.ColumnSpan="2"
                    VerticalAlignment="Bottom" />
     </Grid>

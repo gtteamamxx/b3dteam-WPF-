@@ -27,7 +27,14 @@ namespace b3dteam_app
         public MediaPlayer MediaPlayer;
         public static void PlaySound(string fileName)
         {
-            gui.MediaPlayer.Open(new Uri(fileName, UriKind.Relative));
+            try
+            {
+                gui.MediaPlayer.Open(new Uri(fileName, UriKind.Relative));
+            }
+            catch
+            {
+                return; 
+            }
             gui.MediaPlayer.Play();
         }
 

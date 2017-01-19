@@ -70,5 +70,29 @@ namespace b3dteam_app.Properties {
                 this["muttedservers"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool chat_sound_enabled {
+            get {
+                return ((bool)(this["chat_sound_enabled"]));
+            }
+            set {
+                this["chat_sound_enabled"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool chat_toast_enabled {
+            get {
+                return ((bool)(this["chat_toast_enabled"]));
+            }
+            set {
+                this["chat_toast_enabled"] = value;
+            }
+        }
     }
 }

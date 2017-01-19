@@ -23,8 +23,22 @@ namespace b3dteam_app.View
         public Users()
         {
             InitializeComponent();
+        }
 
+        private void button_AddContact_Click(object sender, RoutedEventArgs e)
+        {
 
+        }
+
+        private void button_RemoveContact_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void button_UserList_Click(object sender, RoutedEventArgs e)
+        {
+            var userListWindow = new UserUtilities.UserList();
+            userListWindow.Show();
         }
     }
 }

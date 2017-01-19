@@ -43,9 +43,6 @@ namespace helper
                 SqlConnectionStringBuilder sqlsb = new SqlConnectionStringBuilder();
 
 
-
-                _sqlConnection.ConnectionString = sqlsb.ConnectionString;
-
                 try
                 {
                     await _sqlConnection.OpenAsync();
@@ -69,6 +66,96 @@ namespace helper
             }
         }
 
+        public static async Task<User> GetUser(int? userid, string login = "")
+        {
+            string query = string.Empty;
+
+            if (string.IsNullOrEmpty(login))
+            {
+                query = $"SELECT login, usertype, lastactivity, userteams FROM USERS WHERE userid = {userid};";
+            }
+            else
+            {
+                query = $"SELECT login, usertype, lastactivity, userteams FROM USERS WHERE login = {login};";
+            }
+             
+            try
+            {
+                using (var command = new SqlCommand(query, SqlConnection))
+                {
+                    await SqlConnection.OpenAsync();
+
+                    using (SqlDataReader rd = await command.ExecuteReaderAsync())
+                    {
+                        while (await rd.ReadAsync())
+                        {
+                            string _login = rd.GetString(0);
+                            int _usertype = rd.GetInt32(1);
+                            int _lastactivity = rd.GetInt32(2);
+                            string _userteams = $"{rd.GetValue(3)}";
+
+                            SqlConnection.Close();
+
+                            return new User()
+                            {
+                                login = _login,
+                                usertype = _usertype,
+                                lastactivity = _lastactivity,
+                                userteams = _userteams
+                            };
+                        }
+
+                        return null;
+                    }
+                }
+            }
+            catch
+            {
+                SqlConnection.Close();
+                return null;
+            }
+        }
+        public static async Task<List<User>> GetUsers()
+        {
+            string query = $"SELECT login, usertype, lastactivity, userteams FROM USERS;";
+
+            List<User> listOfUsers = new List<User>();
+
+            try
+            {
+                using (var command = new SqlCommand(query, SqlConnection))
+                {
+                    await SqlConnection.OpenAsync();
+
+                    using (SqlDataReader rd = await command.ExecuteReaderAsync())
+                    {
+                        while(await rd.ReadAsync())
+                        {
+                            string _login = rd.GetString(0);
+                            int _usertype = rd.GetInt32(1);
+                            int _lastactivity = rd.GetInt32(2);
+                            string _userteams = $"{rd.GetValue(3)}";
+                            listOfUsers.Add(new User()
+                            {
+                                login = _login,
+                                usertype = _usertype,
+                                lastactivity = _lastactivity,
+                                userteams = _userteams
+                            });
+                        }
+
+                        SqlConnection.Close();
+                    }
+                }
+
+                return listOfUsers;
+            }
+            catch
+            {
+                SqlConnection.Close();
+                return null;
+            }
+        }
         public static async Task<RegisterAccountStatus> RegisterNewUser(Ball3D_Status status, string login, string password, string email)
         {
             bool? userExists = await CheckIfUserExists(login);

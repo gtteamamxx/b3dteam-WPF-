@@ -69,6 +69,9 @@ namespace helper
             ClientUser = this;
         }
 
+        public User()
+        {
+        }
         public User(int userid, string login, string password, string email, int usertype)
         {
             _setUser(userid, login, password, email, usertype);
@@ -119,6 +122,46 @@ namespace helper
         public static void Reset()
         {
             OnClientReset?.Invoke(_ClientUser);
+        }
+
+        public SQLManager.Ball3D_Status GetuserStatus()
+        {
+            var now = SQLManager.GetTimeStamp();
+            //idle for 3 minutes is provided as offine
+            return (now - this.lastactivity > 3 * 60) ? SQLManager.Ball3D_Status.Status_Offine : SQLManager.Ball3D_Status.Status_Online;
+        }
+
+        public string GetUserAccountTypeName()
+        {
+            switch(this.usertype)
+            {
+                case 0:
+                    return "Account not activated";
+                case 1:
+                    return "User";
+                case 2:
+                    return "Moderator";
+                case 3:
+                    return "Administartor";
+                case 4:
+                    return "Author of this program";
+                case 5:
+                    return "Author of the game";
+                case 6:
+                    return "Team captain";
+                case 7:
+                    return "Streamer";
+                case 8:
+                    return "Special person";
+                default:
+                    return "Unkown account";
+            }
+        }
+
+        public DateTime GetDateTimeFromLatActivity()
+        {
+            DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            return dtDateTime.AddSeconds(this.lastactivity).ToLocalTime();
         }
     }
 }

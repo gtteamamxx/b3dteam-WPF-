@@ -1,0 +1,121 @@
+﻿<Window x:Class="b3dteam_app.View.UserUtilities.UserList"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:b3dteam_app.View.UserUtilities"
+        mc:Ignorable="d"
+        Title="UserList" Height="510" Width="600"
+        ResizeMode="NoResize">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="4*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid Name="grid_FindUser">
+            <StackPanel>
+                <TextBox Name="textbox_FindUser"
+                     TextChanged="textbox_FindUser_TextChanged"
+                     Margin="5,0,5,0"
+                     Height="20"
+                     Text="Find user..."
+                     VerticalContentAlignment="Center"/>
+
+                <ListView Name="listview_Users"
+                      Height="440"
+                      Margin="5"
+                      SelectionChanged="listview_Users_SelectionChanged"/>
+            </StackPanel>
+
+            <TextBlock HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Name="textblock_Info"
+                   Panel.ZIndex="2"
+                   Visibility="Collapsed"
+                   Text="Updating list...."/>
+
+        </Grid>
+        <StackPanel Orientation="Horizontal"
+                    Grid.Column="1">
+            <Separator Style="{StaticResource {x:Static ToolBar.SeparatorStyleKey}}" />
+        </StackPanel>
+
+        <Grid Grid.Column="1"
+              Name="grid_UserInfo"
+              Visibility="Visible">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+                <StackPanel Orientation="Horizontal">
+                    <Image Width="50"
+                           Height="150"
+                           Margin="30"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Top"
+                           Source="/Images/profile.png" />
+
+                    <StackPanel Margin="0,20,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Login:" />
+                            <TextBlock Margin="10,0,0,0"
+                                       Name="textbox_UserInfoLogin"
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal"
+                                    Margin="0,20,0,0">
+                            <TextBlock Text="Account type:" />
+                            <TextBlock Margin="10,0,0,0"
+                                       Name="textbox_UserInfoAccountType"
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal"
+                                    Name="stackpanel_UserInfoLastActivity"
+                                    Margin="0,20,0,0">
+                            <TextBlock Text="Status:" />
+                            <TextBlock Margin="10,0,0,0"
+                                       Name="textbox_UserInfoLastActivity"
+                                       TextWrapping="Wrap"/>
+                            <Image Width="15"
+                                   Height="15"
+                                   Margin="10,0,0,0"
+                                   Name="image_UserInfoLatActivity" />
+                        </StackPanel>
+
+                        <TextBlock Margin="0,20,0,0"
+                                   Name="textbox_UserInfoIsFriend"
+                                   Foreground="Green"/>
+                    </StackPanel>
+                </StackPanel>
+
+            </Grid>
+            <Grid Grid.Row="1">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <Label>User teams:</Label>
+                    <ListView Margin="5,0,0,0" 
+                              Name="listview_UserInfoTeams"
+                              Height="229"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1">
+
+                </StackPanel>
+            </Grid>
+
+        </Grid>
+    </Grid>
+
+</Window>

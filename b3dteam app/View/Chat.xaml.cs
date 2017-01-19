@@ -300,14 +300,17 @@ namespace b3dteam_app.View
                 if (checkbox_AutoLogin.IsChecked == true)
                 {
                     Properties.Settings.Default.autologin = true;
-
                 }
+
                 Properties.Settings.Default.Save();
 
+                //all servers including all privates channels where i can join
                 ball3DServer.AllChannels
-                    .Where(p => p.Type == Discord.ChannelType.Text && p.IsPrivate == false)
-                        .ToList()
-                            .ForEach(p => ListOfServers.Add(new Model.Server { Name = p.Name, Id = p.Id, MuteText = CheckIfChannelIsMuted(p.Name) ? "Unmute" : "Mute", UnreadedMessages = "0" }));
+                    .Where(p => p.Type == Discord.ChannelType.Text)
+                        .Except(ball3DServer.AllChannels
+                            .Where(p => p.Name.Contains("private") && !p.PermissionOverwrites.Any(d => d.TargetType == Discord.PermissionTarget.User && d.TargetId == _DiscordClient.CurrentUser.Id)))
+                                .ToList()
+                                    .ForEach(p => ListOfServers.Add(new Model.Server { Name = p.Name, Id = p.Id, MuteText = CheckIfChannelIsMuted(p.Name) ? "Unmute" : "Mute", UnreadedMessages = "0" }));
 
                 listview_Servers.ItemsSource = ListOfServers;
                 listview_Servers.SelectedItem = ListOfServers.First(p => p.Name == "global");
@@ -317,6 +320,7 @@ namespace b3dteam_app.View
                     _MessageReceivedSubscribed = true;
                     _DiscordClient.MessageReceived += _DiscordClient_MessageReceived;
                 }
+
                 ChangeButtonsVisibility(Visibility.Collapsed);
                 ShowChatAndServers();
             }
@@ -336,10 +340,18 @@ namespace b3dteam_app.View
         {
             this.Dispatcher.Invoke(() =>
                {
+                   if (_DiscordClient.CurrentUser == null)
+                   {
+                       return;
+                   }
+
+                   bool selfMessage = e.User.Name == _DiscordClient.CurrentUser.Name;
+
                    if ((listview_Servers.SelectedItem as Model.Server).Name == e.Channel.Name)
                    {
                        AddMessage(GetRichTextBox, e.Message);
-                       if (e.User.Name != _DiscordClient.CurrentUser.Name)
+
+                       if (!selfMessage && Properties.Settings.Default.chat_sound_enabled)
                        {
                            MainWindow.PlaySound("Sounds/message_received.mp3");
                        }
@@ -354,11 +366,11 @@ namespace b3dteam_app.View
                            {
                                AddMessage(ChatUtilities.PrivateMessage.GetRichTextBox, e.Message);
 
-                               if (e.User.Name != _DiscordClient.CurrentUser.Name)
+                               if (!selfMessage && Properties.Settings.Default.chat_sound_enabled)
                                {
                                    MainWindow.PlaySound("Sounds/message_received.mp3");
                                }
-                               
+
                                return;
                            }
                        }
@@ -374,13 +386,19 @@ namespace b3dteam_app.View
 
                        ChatUtilities.PrivateMessage.AddPrivateChannelIfNeccessary(server);
 
-                       Model.NotyficationHelper.SendMessage($"Private Message", $"{e.User.Name}: {(e.Message.Attachments.Length > 0 ? "Sends a file" : e.Message.Text)}");
+                       if (Properties.Settings.Default.chat_toast_enabled)
+                       {
+                           Model.NotyficationHelper.SendMessage($"Private Message", $"{e.User.Name}: {(e.Message.Attachments.Length > 0 ? "Sends a file" : e.Message.Text)}");
+                       }
                    }
                    else if (e.User.Name != _DiscordClient.CurrentUser.Name && !CheckIfChannelIsMuted(e.Channel.Name))
                    {
                        //notyify about received message
                        SetUnreadedMessageStatus(e.Channel.Name);
-                       Model.NotyficationHelper.SendMessage($"{e.Channel.Name}", $"{e.User.Name}: {(e.Message.Attachments.Length > 0 ? "Sends a file" : e.Message.Text)}");
+                       if (Properties.Settings.Default.chat_toast_enabled)
+                       {
+                           Model.NotyficationHelper.SendMessage($"{e.Channel.Name}", $"{e.User.Name}: {(e.Message.Attachments.Length > 0 ? "Sends a file" : e.Message.Text)}");
+                       }
                    }
                });
         }

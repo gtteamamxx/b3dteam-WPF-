@@ -23,6 +23,34 @@ namespace b3dteam_app.View.Options.Options
         public General()
         {
             InitializeComponent();
+
+            FillCheckBoxes();
+        }
+
+        private void FillCheckBoxes()
+        {
+            if(Properties.Settings.Default.chat_sound_enabled == true)
+            {
+                checkbox_MessageNotyfication_Sound.IsChecked = true;
+            }
+
+            if(Properties.Settings.Default.chat_toast_enabled == true)
+            {
+                checkbox_MessageNotyfication_Toast.IsChecked = true;
+            }
+        }
+
+        private void button_Save_Click(object sender, RoutedEventArgs e)
+        {
+            Properties.Settings.Default.chat_toast_enabled = checkbox_MessageNotyfication_Toast.IsChecked == true ? true : false;
+            Properties.Settings.Default.chat_sound_enabled = checkbox_MessageNotyfication_Sound.IsChecked == true ? true : false;
+
+            OptionsWindow.gui.Close();
+        }
+
+        private void button_Cancel_Click(object sender, RoutedEventArgs e)
+        {
+            OptionsWindow.gui.Close();
         }
     }
 }
