@@ -12,23 +12,24 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Smith.WPF.HtmlEditor;
 
 namespace b3dteam_app.View
 {
     /// <summary>
-    /// Interaction logic for Events.xaml
+    /// Interaction logic for Informations.xaml
     /// </summary>
-    public partial class Events : UserControl
+    public partial class Informations : UserControl
     {
-        public Events()
+        public Informations()
         {
             InitializeComponent();
 
-            this.Loaded += async (s, e) =>
-            {
-                htmleditor_Editor.ContentHtml = (await helper.SQLManager.GetPlainHTMLOfEvents())??"";
-            };
+            this.Loaded += Informations_Loaded;
+        }
+
+        private async void Informations_Loaded(object sender, RoutedEventArgs e)
+        {
+            htmleditor_Editor.ContentHtml = (await helper.SQLManager.GetPlainHTMLOfInformations())??"";
         }
     }
 }

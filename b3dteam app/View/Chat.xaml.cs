@@ -64,8 +64,6 @@ namespace b3dteam_app.View
 
             #region Attachment Click
             GetRichTextBox.MouseClick += GetRichTextBox_MouseClick;
-
-            
         }
 
         public static void GetRichTextBox_MouseClick(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -105,14 +103,22 @@ namespace b3dteam_app.View
                     }
                     var window = new Window()
                     {
-                        Title = message.Attachments[0].Filename,
+                        Title = $"{message.Attachments[0].Filename} | Right mouse click -> Copy url",
                         Width = message.Attachments[0].Width == null ? 300 : (double)message.Attachments[0].Width,
                         Height = message.Attachments[0].Height == null ? 300 : (double)message.Attachments[0].Height,
                     };
 
                     if (message.Attachments[0].Width != null)
                     {
-                        window.Content = new Image() { Source = new BitmapImage(new Uri(message.Attachments[0].Url)) };
+                        var image = new Image() { Source = new BitmapImage(new Uri(message.Attachments[0].Url)) };
+
+                        window.MouseRightButtonDown += (s, f) =>
+                        {
+                            Clipboard.SetText(message.Attachments[0].Url);
+                            MessageBox.Show("URL of file was coppied to clipboard");
+                        };
+
+                        window.Content = image;
                     }
                     else
                     {
@@ -138,6 +144,12 @@ namespace b3dteam_app.View
                             System.Diagnostics.Process.Start(message.Attachments[0].Url);
                         };
                         grid.Children.Add(button);
+
+                        window.MouseRightButtonDown += (s, f) =>
+                        {
+                            Clipboard.SetText(message.Attachments[0].Url);
+                            MessageBox.Show("URL of file was coppied to clipboard");
+                        };
 
                         window.Content = grid;
                     }
@@ -327,16 +339,26 @@ namespace b3dteam_app.View
                    if ((listview_Servers.SelectedItem as Model.Server).Name == e.Channel.Name)
                    {
                        AddMessage(GetRichTextBox, e.Message);
+                       if (e.User.Name != _DiscordClient.CurrentUser.Name)
+                       {
+                           MainWindow.PlaySound("Sounds/message_received.mp3");
+                       }
                    }
                    else if (e.Channel.Users.Count() == 2) // private mesage
                    {
-                       if(ChatUtilities.PrivateMessage.gui != null && ChatUtilities.PrivateMessage.gui.listview_PrivateChannels.SelectedItem as Model.Server != null)
+                       if (ChatUtilities.PrivateMessage.gui != null && ChatUtilities.PrivateMessage.gui.listview_PrivateChannels.SelectedItem as Model.Server != null)
                        {
                            var selectedItem = ChatUtilities.PrivateMessage.gui.listview_PrivateChannels.SelectedItem as Model.Server;
 
-                           if(selectedItem.Name == e.Channel.Name)
+                           if (selectedItem.Name == e.Channel.Name)
                            {
                                AddMessage(ChatUtilities.PrivateMessage.GetRichTextBox, e.Message);
+
+                               if (e.User.Name != _DiscordClient.CurrentUser.Name)
+                               {
+                                   MainWindow.PlaySound("Sounds/message_received.mp3");
+                               }
+                               
                                return;
                            }
                        }

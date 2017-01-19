@@ -63,7 +63,7 @@ namespace helper
                 catch
                 {
                     _sqlConnection.Close();
-                    System.Windows.MessageBox.Show("Error while connecting to server", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Error while connecting to server", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return false;
                 }
             }
@@ -108,7 +108,7 @@ namespace helper
             catch
             {
                 SqlConnection.Close();
-                System.Windows.MessageBox.Show("There was problem with registering an user.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("There was problem with registering an user.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
 
@@ -242,7 +242,7 @@ namespace helper
             return (int)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
         }
 
-        public static async Task<string> GetPlainHTMLOfChanges()
+        public static async Task<string> GetPlainHTMLOfEvents()
         {
             string query = "SELECT html FROM EVENTS";
 
@@ -258,18 +258,17 @@ namespace helper
 
                     return returnPlainHtml;
                 }
-                catch (Exception ex)
+                catch
                 {
                     SqlConnection.Close();
-                    MessageBox.Show("Błąd podczas pobierania raw HTML" + Environment.NewLine + ex.Message);
                     return null;
                 }
             }
         }
 
-        public static async Task<bool> SendPlainHTMLOfChanges(string changes)
+        public static async Task<string> GetPlainHTMLOfInformations()
         {
-            string query = $"UPDATE EVENTS SET html = '{changes}';";
+            string query = "SELECT html FROM INFORMATIONS";
 
             using (var command = new SqlCommand(query, SqlConnection))
             {
@@ -277,17 +276,16 @@ namespace helper
                 {
                     await SqlConnection.OpenAsync();
 
-                    await command.ExecuteNonQueryAsync();
+                    var returnPlainHtml = ((await command.ExecuteScalarAsync()) as string);
 
                     SqlConnection.Close();
 
-                    return true;
+                    return returnPlainHtml;
                 }
-                catch (Exception ex)
+                catch
                 {
                     SqlConnection.Close();
-                    MessageBox.Show("Błąd podczas wysyłania żądania raw HTML" + Environment.NewLine + ex.Message);
-                    return false;
+                    return null;
                 }
             }
         }

@@ -37,6 +37,11 @@ namespace b3dteam_app.View.ChatUtilities
             if (result == null)
             {
                 ListOfPrivateChannels.Add(new Tuple<Model.Server, PrivateMessageUserControl>(server, null));
+
+                if(gui != null)
+                {
+                    gui.listview_PrivateChannels.Items.Add(server);
+                }
             }
             else
             {
@@ -58,6 +63,7 @@ namespace b3dteam_app.View.ChatUtilities
                 ListOfPrivateChannels[ListOfPrivateChannels.IndexOf(result)] = new Tuple<Model.Server, PrivateMessageUserControl>(server, user);
             }
         }
+
         public PrivateMessage()
         {
             InitializeComponent();
@@ -81,6 +87,8 @@ namespace b3dteam_app.View.ChatUtilities
             catch { }
 
             var channelId = selectedItem.Id;
+
+            GetRichTextBox.Clear();
 
             var messagesFromChannel = await Chat.gui.DownloadLastMessages(channelId);
 

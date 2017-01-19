@@ -57,6 +57,7 @@
                 </TabItem>
                 <TabItem Name="tab_Informations"
                          Header="Informations">
+                    <view:Informations />
                 </TabItem>
 
                 <TabItem Name="tab_Chat"

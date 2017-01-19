@@ -24,6 +24,12 @@ namespace b3dteam_app
     public partial class MainWindow : Window
     {
         public static MainWindow gui;
+        public MediaPlayer MediaPlayer;
+        public static void PlaySound(string fileName)
+        {
+            gui.MediaPlayer.Open(new Uri(fileName, UriKind.Relative));
+            gui.MediaPlayer.Play();
+        }
 
         public MainWindow()
         {
@@ -37,9 +43,9 @@ namespace b3dteam_app
                 UpdateTitle();
             };
 
+            MediaPlayer = new MediaPlayer();
 
             helper.Application.OnCloseApp += () => Application.Current.Shutdown();
-
         }
 
         private void UpdateTitle()
