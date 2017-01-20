@@ -42,12 +42,21 @@ namespace helper
             {
                 SqlConnectionStringBuilder sqlsb = new SqlConnectionStringBuilder();
 
+                sqlsb.UserID = "be3dteamadm";
+                sqlsb.Password = "TestoweHaslo1!";
+                sqlsb.DataSource = "b3dteam.mssql.somee.com";
+                sqlsb.WorkstationID = "b3dteam.mssql.somee.com";
+                sqlsb.InitialCatalog = "b3dteam";
+                sqlsb.PacketSize = 4096;
+                sqlsb.PersistSecurityInfo = false;
+                sqlsb.MultipleActiveResultSets = true;
+                _sqlConnection.ConnectionString = sqlsb.ConnectionString;
 
                 try
                 {
                     await _sqlConnection.OpenAsync();
 
-                    if (_sqlConnection.State == System.Data.ConnectionState.Open)
+                    if (_sqlConnection.State == ConnectionState.Open)
                     {
                         SqlConnection = new SqlConnection(sqlsb.ConnectionString);
                         return true;
@@ -235,7 +244,23 @@ namespace helper
                                 return new Tuple<LoginAccountStatus, User>(LoginAccountStatus.Account_Not_Activated, null);
                             }
 
-                            return new Tuple<LoginAccountStatus, User>(LoginAccountStatus.Succesful, new User(_userid, _login, _password, _email, _lastactivity, _regtime, _usertype, _userfriends, _messages, _userteams));
+                            var user = new User
+                            {
+                                userid = _userid,
+                                login = _login,
+                                password = _password,
+                                email = _email,
+                                lastactivity = _lastactivity,
+                                regtime = _regtime,
+                                usertype = _usertype,
+                                userfriends = _userfriends,
+                                messages = _messages,
+                                userteams = _userteams,
+                            };
+
+                            User.ClientUser = user;
+
+                            return new Tuple<LoginAccountStatus, User>(LoginAccountStatus.Succesful, user);
                         }
 
                         SqlConnection.Close();

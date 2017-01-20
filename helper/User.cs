@@ -8,6 +8,8 @@ namespace helper
 {
     public class User
     {
+        public const double CHECK_STATUS_DURATION = 3.0; // In minutes
+
         public delegate void _ClientStatusChanged(SQLManager.Ball3D_Status newStatus, SQLManager.Ball3D_Status oldStatus);
         public static event _ClientStatusChanged OnClientStatusChanged;
 
@@ -19,24 +21,15 @@ namespace helper
 
         private static User _ClientUser;
         public static SQLManager.Ball3D_Status _ClientStatus;
-        
+
         public static User ClientUser
         {
-            get
-            {
-                return _ClientUser;
-            }
-            set
-            {
-                _ClientUser = value;
-            }
+            get { return _ClientUser; }
+            set { _ClientUser = value; }
         }
         public static SQLManager.Ball3D_Status ClientStatus
         {
-            get
-            {
-                return _ClientStatus;
-            }
+            get { return _ClientStatus; }
             set
             {
                 var oldStatus = _ClientStatus;
@@ -58,62 +51,6 @@ namespace helper
         public int autologin { get; set; }
         public int rememberme { get; set; }
 
-        public void _setUser(int userid, string login, string password, string email, int usertype)
-        {
-            this.userid = userid;
-            this.login = login;
-            this.password = password;
-            this.email = email;
-            this.usertype = usertype;
-
-            ClientUser = this;
-        }
-
-        public User()
-        {
-        }
-        public User(int userid, string login, string password, string email, int usertype)
-        {
-            _setUser(userid, login, password, email, usertype);
-        }
-
-        public User(int userid, string login, string password, string email, int lastactivity, int usertype)
-        {
-            _setUser(userid, login, password, email, usertype);
-            this.lastactivity = lastactivity;
-        }
-
-        public User(int userid, string login, string password, string email, int lastactivity, int regtime, int usertype)
-        {
-            _setUser(userid, login, password, email, usertype);
-            this.lastactivity = lastactivity;
-            this.regtime = regtime;
-        }
-        public User(int userid, string login, string password, string email, int lastactivity, int regtime, int usertype, string userfriends)
-        {
-            _setUser(userid, login, password, email, usertype);
-            this.lastactivity = lastactivity;
-            this.regtime = regtime;
-            this.userfriends = userfriends;
-        }
-        public User(int userid, string login, string password, string email, int lastactivity, int regtime, int usertype, string userfriends, string messages)
-        {
-            _setUser(userid, login, password, email, usertype);
-            this.lastactivity = lastactivity;
-            this.regtime = regtime;
-            this.userfriends = userfriends;
-            this.messages = messages;
-        }
-        public User(int userid, string login, string password, string email, int lastactivity, int regtime, int usertype, string userfriends, string messages, string userteams)
-        {
-            _setUser(userid, login, password, email, usertype);
-            this.lastactivity = lastactivity;
-            this.regtime = regtime;
-            this.userfriends = userfriends;
-            this.messages = messages;
-            this.userteams = userteams;
-        }
-
         public static void Save()
         {
             OnClientSave?.Invoke(_ClientUser);
@@ -128,12 +65,12 @@ namespace helper
         {
             var now = SQLManager.GetTimeStamp();
             //idle for 3 minutes is provided as offine
-            return (now - this.lastactivity > 3 * 60) ? SQLManager.Ball3D_Status.Status_Offine : SQLManager.Ball3D_Status.Status_Online;
+            return ((double)(now - this.lastactivity) > (CHECK_STATUS_DURATION * 60)) ? SQLManager.Ball3D_Status.Status_Offine : SQLManager.Ball3D_Status.Status_Online;
         }
 
         public string GetUserAccountTypeName()
         {
-            switch(this.usertype)
+            switch (this.usertype)
             {
                 case 0:
                     return "Account not activated";

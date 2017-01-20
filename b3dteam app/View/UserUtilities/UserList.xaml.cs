@@ -114,8 +114,7 @@ namespace b3dteam_app.View.UserUtilities
             image_UserInfoLatActivity.Source = new BitmapImage(new Uri(user.GetuserStatus() == helper.SQLManager.Ball3D_Status.Status_Online ? "http://vignette1.wikia.nocookie.net/pocketplanes/images/5/55/Online_status.png/revision/latest?cb=20120721162015"
                     : "http://yourlivestore.com/templates/tmpl_livestore/images/icons/offline.png"));
 
-            //if firend
-
+            //if user is friend
             textbox_UserInfoIsFriend.Text = "User is your friend";
         }
     }

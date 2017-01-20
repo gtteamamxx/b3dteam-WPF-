@@ -288,13 +288,18 @@ namespace b3dteam
 
             else if (Properties.Settings.Default.userid != -1 && Properties.Settings.Default.autologin == true)
             {
-                ClientUser = new helper.User(Properties.Settings.Default.userid,
-                    Properties.Settings.Default.login, Properties.Settings.Default.password,
-                    Properties.Settings.Default.email, Properties.Settings.Default.lastactivity,
-                    Properties.Settings.Default.regtime, Properties.Settings.Default.usertype);
-
-                ClientUser.rememberme = Properties.Settings.Default.rememberme ? 1 : 0;
-                ClientUser.autologin = Properties.Settings.Default.autologin ? 1 : 0;
+                ClientUser = new helper.User
+                {
+                    userid = Properties.Settings.Default.userid,
+                    login = Properties.Settings.Default.login,
+                    password = Properties.Settings.Default.password,
+                    email = Properties.Settings.Default.email,
+                    lastactivity = Properties.Settings.Default.lastactivity,
+                    regtime = Properties.Settings.Default.regtime,
+                    usertype = Properties.Settings.Default.usertype,
+                    rememberme = Properties.Settings.Default.rememberme ? 1 : 0,
+                    autologin = Properties.Settings.Default.autologin ? 1 : 0
+                };
 
                 return true;
             }

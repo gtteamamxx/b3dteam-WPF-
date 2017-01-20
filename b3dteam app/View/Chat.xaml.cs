@@ -71,7 +71,7 @@ namespace b3dteam_app.View
             var richTextBox = sender as System.Windows.Forms.RichTextBox;
             var lineNumber = richTextBox.Text.Substring(0, richTextBox.SelectionStart).Count(chr => chr == '\n');
 
-            if(richTextBox.Lines.Length == 0)
+            if (richTextBox.Lines.Length == 0)
             {
                 return;
             }
@@ -304,13 +304,10 @@ namespace b3dteam_app.View
 
                 Properties.Settings.Default.Save();
 
-                //all servers including all privates channels where i can join
                 ball3DServer.AllChannels
-                    .Where(p => p.Type == Discord.ChannelType.Text)
-                        .Except(ball3DServer.AllChannels
-                            .Where(p => p.Name.Contains("private") && !p.PermissionOverwrites.Any(d => d.TargetType == Discord.PermissionTarget.User && d.TargetId == _DiscordClient.CurrentUser.Id)))
-                                .ToList()
-                                    .ForEach(p => ListOfServers.Add(new Model.Server { Name = p.Name, Id = p.Id, MuteText = CheckIfChannelIsMuted(p.Name) ? "Unmute" : "Mute", UnreadedMessages = "0" }));
+                 .Where(p => p.Type == Discord.ChannelType.Text)
+                   .ToList()
+                     .ForEach(p => ListOfServers.Add(new Model.Server { Name = p.Name, Id = p.Id, MuteText = CheckIfChannelIsMuted(p.Name) ? "Unmute" : "Mute", UnreadedMessages = "0" }));
 
                 listview_Servers.ItemsSource = ListOfServers;
                 listview_Servers.SelectedItem = ListOfServers.First(p => p.Name == "global");

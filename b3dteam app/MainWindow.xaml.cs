@@ -27,14 +27,8 @@ namespace b3dteam_app
         public MediaPlayer MediaPlayer;
         public static void PlaySound(string fileName)
         {
-            try
-            {
-                gui.MediaPlayer.Open(new Uri(fileName, UriKind.Relative));
-            }
-            catch
-            {
-                return; 
-            }
+            try { gui.MediaPlayer.Open(new Uri(fileName, UriKind.Relative)); }
+            catch { return; }
             gui.MediaPlayer.Play();
         }
 
@@ -45,10 +39,7 @@ namespace b3dteam_app
 
             this.Loaded += MainWindow_Loaded;
 
-            helper.User.OnClientStatusChanged += (n, o) =>
-            {
-                UpdateTitle();
-            };
+            helper.User.OnClientStatusChanged += (n, o) => UpdateTitle();
 
             MediaPlayer = new MediaPlayer();
 

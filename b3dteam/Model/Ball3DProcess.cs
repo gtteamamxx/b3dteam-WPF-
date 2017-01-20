@@ -9,7 +9,7 @@ namespace b3dteam.Model
 {
     public class Ball3DProcess
     {
-        public const double CHECK_STATUS_DURATION = 0.2; // In minutes
+        
         public MainWindow MainWindowInstance;
 
         public Ball3DProcess(MainWindow instance)
@@ -28,7 +28,7 @@ namespace b3dteam.Model
         {
             while (true)
             {
-                await Task.Delay(TimeSpan.FromMinutes(CHECK_STATUS_DURATION));
+                await Task.Delay(TimeSpan.FromMinutes(helper.User.CHECK_STATUS_DURATION));
 
                 if (IsBall3DProcessRunning() || IsAppRunning())
                 {
