@@ -42,8 +42,8 @@ namespace helper
             {
                 SqlConnectionStringBuilder sqlsb = new SqlConnectionStringBuilder();
 
-                sqlsb.UserID = "be3dteamadm";
-                sqlsb.Password = "TestoweHaslo1!";
+                sqlsb.UserID = "be3dteamadm"; //dont worry, login's fake too :)
+                sqlsb.Password = "TestoweHaslo1!"; //dont worry, password's fake :)
                 sqlsb.DataSource = "b3dteam.mssql.somee.com";
                 sqlsb.WorkstationID = "b3dteam.mssql.somee.com";
                 sqlsb.InitialCatalog = "b3dteam";
