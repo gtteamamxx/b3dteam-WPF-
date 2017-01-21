@@ -117,5 +117,10 @@ namespace b3dteam_app.View.UserUtilities
             //if user is friend
             textbox_UserInfoIsFriend.Text = "User is your friend";
         }
+
+        private void button_PrivateMessage_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

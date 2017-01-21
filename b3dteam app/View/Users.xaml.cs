@@ -27,7 +27,7 @@ namespace b3dteam_app.View
 
         private void button_AddContact_Click(object sender, RoutedEventArgs e)
         {
-
+            new UserUtilities.AddContact().ShowDialog();
         }
 
         private void button_RemoveContact_Click(object sender, RoutedEventArgs e)
@@ -39,6 +39,16 @@ namespace b3dteam_app.View
         {
             var userListWindow = new UserUtilities.UserList();
             userListWindow.Show();
+        }
+
+        private void textbox_MessagePrivate_KeyUp(object sender, KeyEventArgs e)
+        {
+
+        }
+
+        private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
         }
     }
 }

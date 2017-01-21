@@ -37,7 +37,7 @@ namespace b3dteam_app.View
         public Chat()
         {
             InitializeComponent();
-
+            
             #region Initializing variables
             gui = this;
             _DiscordClient = new Discord.DiscordClient(); ;

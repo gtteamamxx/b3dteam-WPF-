@@ -140,6 +140,9 @@
     <Compile Include="View\Users.xaml.cs">
       <DependentUpon>Users.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\UserUtilities\AddContact.xaml.cs">
+      <DependentUpon>AddContact.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\UserUtilities\UserList.xaml.cs">
       <DependentUpon>UserList.xaml</DependentUpon>
     </Compile>
@@ -203,6 +206,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="View\UserUtilities\AddContact.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\UserUtilities\UserList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -244,6 +251,10 @@
     <ProjectReference Include="..\..\..\..\..\Desktop\SmithHtmlEditor\SmithHtmlEditor.csproj">
       <Project>{84badda1-ab3a-4064-b87e-178d7446901d}</Project>
       <Name>SmithHtmlEditor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ChatManager\ChatManager.csproj">
+      <Project>{a9639e9b-fe74-4f66-9fc2-ada7db328fbb}</Project>
+      <Name>ChatManager</Name>
     </ProjectReference>
     <ProjectReference Include="..\helper\helper.csproj">
       <Project>{ad318e3e-47e8-42d6-bf70-d2eb1246c98c}</Project>

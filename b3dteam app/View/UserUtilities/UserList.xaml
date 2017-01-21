@@ -111,6 +111,10 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="1">
+                    <Button Name="button_PrivateMessage"
+                            Click="button_PrivateMessage_Click"
+                            Height="30"
+                            Content="Private message" />
 
                 </StackPanel>
             </Grid>

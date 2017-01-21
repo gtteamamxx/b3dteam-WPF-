@@ -42,8 +42,7 @@ namespace helper
             {
                 SqlConnectionStringBuilder sqlsb = new SqlConnectionStringBuilder();
 
-                sqlsb.UserID = "be3dteamadm"; //dont worry, login's fake too :)
-                sqlsb.Password = "TestoweHaslo1!"; //dont worry, password's fake :)
+
                 sqlsb.DataSource = "b3dteam.mssql.somee.com";
                 sqlsb.WorkstationID = "b3dteam.mssql.somee.com";
                 sqlsb.InitialCatalog = "b3dteam";
@@ -81,11 +80,11 @@ namespace helper
 
             if (string.IsNullOrEmpty(login))
             {
-                query = $"SELECT login, usertype, lastactivity, userteams FROM USERS WHERE userid = {userid};";
+                query = $"SELECT userid, login, usertype, lastactivity, userteams FROM USERS WHERE userid = {userid};";
             }
             else
             {
-                query = $"SELECT login, usertype, lastactivity, userteams FROM USERS WHERE login = {login};";
+                query = $"SELECT userid, login, usertype, lastactivity, userteams FROM USERS WHERE login = {login};";
             }
              
             try
@@ -98,15 +97,17 @@ namespace helper
                     {
                         while (await rd.ReadAsync())
                         {
-                            string _login = rd.GetString(0);
-                            int _usertype = rd.GetInt32(1);
-                            int _lastactivity = rd.GetInt32(2);
-                            string _userteams = $"{rd.GetValue(3)}";
+                            int _userid = rd.GetInt32(0);
+                            string _login = rd.GetString(1);
+                            int _usertype = rd.GetInt32(2);
+                            int _lastactivity = rd.GetInt32(3);
+                            string _userteams = $"{rd.GetValue(4)}";
 
                             SqlConnection.Close();
 
                             return new User()
                             {
+                                userid = _userid,
                                 login = _login,
                                 usertype = _usertype,
                                 lastactivity = _lastactivity,
@@ -118,7 +119,7 @@ namespace helper
                     }
                 }
             }
-            catch
+            catch(Exception ex)
             {
                 SqlConnection.Close();
                 return null;
@@ -126,7 +127,7 @@ namespace helper
         }
         public static async Task<List<User>> GetUsers()
         {
-            string query = $"SELECT login, usertype, lastactivity, userteams FROM USERS;";
+            string query = $"SELECT userid, login, usertype, lastactivity, userteams FROM USERS;";
 
             List<User> listOfUsers = new List<User>();
 
@@ -140,12 +141,13 @@ namespace helper
                     {
                         while(await rd.ReadAsync())
                         {
-                            string _login = rd.GetString(0);
-                            int _usertype = rd.GetInt32(1);
-                            int _lastactivity = rd.GetInt32(2);
-                            string _userteams = $"{rd.GetValue(3)}";
+                            string _login = rd.GetString(1);
+                            int _usertype = rd.GetInt32(2);
+                            int _lastactivity = rd.GetInt32(3);
+                            string _userteams = $"{rd.GetValue(4)}";
                             listOfUsers.Add(new User()
                             {
+                                userid = rd.GetInt32(0),
                                 login = _login,
                                 usertype = _usertype,
                                 lastactivity = _lastactivity,
@@ -234,8 +236,8 @@ namespace helper
                             int _lastactivity = rd.GetInt32(5);
                             int _regtime = rd.GetInt32(6);
                             string _userfriends = $"{rd.GetValue(7)}";
-                            string _messages = $"{rd.GetValue(7)}";
-                            string _userteams = $"{rd.GetValue(7)}";
+                            string _messages = $"{rd.GetValue(8)}";
+                            string _userteams = $"{rd.GetValue(9)}";
 
                             SqlConnection.Close();
 

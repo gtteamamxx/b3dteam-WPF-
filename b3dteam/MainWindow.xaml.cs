@@ -288,7 +288,7 @@ namespace b3dteam
 
             else if (Properties.Settings.Default.userid != -1 && Properties.Settings.Default.autologin == true)
             {
-                ClientUser = new helper.User
+                ClientUser = helper.User.ClientUser = new helper.User()
                 {
                     userid = Properties.Settings.Default.userid,
                     login = Properties.Settings.Default.login,
