@@ -50,11 +50,13 @@
                    Grid.Row="1"/>
 
         <TextBlock Text="Your talks:"
+                   Name="textblock_Update"
                    Grid.Row="1"
                    Margin="5,5,0,0"/>
 
         <ListView Grid.Row="1"
-                  SelectionChanged="ListView_SelectionChanged"
+                  Name="listview_Contact"
+                  SelectionChanged="listview_Contact_SelectionChanged"
                   Margin="10,25,10,10" />
         
         <StackPanel Orientation="Horizontal"

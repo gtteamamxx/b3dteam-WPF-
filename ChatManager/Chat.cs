@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -9,17 +10,20 @@ namespace ChatManager
 {
     public class Chat : QueryBuilder
     {
-        public Chat(SqlConnection SqlConnection) : base(SqlConnection) { }
-        public Chat() { }
+
+        public Chat()
+        {
+            SqlDependency.Start(SQLC.Connection.GetConnection().ConnectionString);
+        }
 
         public async Task<ChatRoom> GetChatRoom(int Id = -1, string Name = "")
         {
             return await _GetChatRoom(Id, Name);
         }
 
-        public async Task<User> GetUser(int Id = 1, string Login = "")
+        public async Task<User> GetUser(int Id = 1, string Login = "", bool GetLastMessage = false)
         {
-            return await _GetUser(Id, Login);
+            return await _GetUser(Id, Login, GetLastMessage);
         }
 
         public async Task<ChatRoom> CreateChatRoom(string Name, List<User> users, User owner)

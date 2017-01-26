@@ -19,8 +19,10 @@ namespace b3dteam_app.View.UserUtilities
     /// </summary>
     public partial class AddContact : Window
     {
-        public AddContact()
+        private Users UsersWindow;
+        public AddContact(Users usersWindow)
         {
+            this.UsersWindow = usersWindow;
             InitializeComponent();
         }
 
@@ -33,27 +35,44 @@ namespace b3dteam_app.View.UserUtilities
         {
             var clickedItem = listview_Users.SelectedItem as TextBlock;
 
-            if(clickedItem == null ||
-                clickedItem.Text == "No users were found")
+            if(clickedItem == null || clickedItem.Text == "No users were found")
             {
                 return;
             }
             else
             {
                 SetButtonsStatus(false);
-                var user = await new ChatManager.Chat(helper.SQLManager.SqlConnection).GetUser(int.Parse(clickedItem.Text.Split('#')[0]));
+                var user = await Users.ChatEngine.GetUser(int.Parse(clickedItem.Text.Split('#')[0]));
 
                 if(user == null)
                 {
                     SetButtonsStatus(true);
                     MessageBox.Show("Error occured");
-                    return;
+                }
+                else if(user != null && user.userid == Users.ClientUser.userid)
+                {
+                    SetButtonsStatus(true);
+                    MessageBox.Show("You can't add self");
                 }
                 else
                 {
+                    if (await Users.ClientUser.IsChatRoomWithUser(user))
+                    {
+                        MessageBox.Show("You have alerady talk with this user!");
+                    }
+                    else
+                    {
+                        if (await UsersWindow.AddContactToList(user))
+                        {
+                            MessageBox.Show("User has been added to your contact list. Wait a while for refresh.");
+                        }
+                        else
+                        {
+                            MessageBox.Show("Error durning creating new room");
+                        }
+                    }
+
                     SetButtonsStatus(true);
-                    MessageBox.Show("User added to your list");
-                    //
                 }
             }
 

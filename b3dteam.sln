@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmithHtmlEditor", "..\..\..
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatManager", "ChatManager\ChatManager.csproj", "{A9639E9B-FE74-4F66-9FC2-ADA7DB328FBB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLC", "SQLC\SQLC.csproj", "{36D21139-7D16-4FAD-B14F-F68684C7FF9C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,18 @@ Global
 		{A9639E9B-FE74-4F66-9FC2-ADA7DB328FBB}.Release|x64.Build.0 = Release|Any CPU
 		{A9639E9B-FE74-4F66-9FC2-ADA7DB328FBB}.Release|x86.ActiveCfg = Release|Any CPU
 		{A9639E9B-FE74-4F66-9FC2-ADA7DB328FBB}.Release|x86.Build.0 = Release|Any CPU
+		{36D21139-7D16-4FAD-B14F-F68684C7FF9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36D21139-7D16-4FAD-B14F-F68684C7FF9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36D21139-7D16-4FAD-B14F-F68684C7FF9C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{36D21139-7D16-4FAD-B14F-F68684C7FF9C}.Debug|x64.Build.0 = Debug|Any CPU
+		{36D21139-7D16-4FAD-B14F-F68684C7FF9C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{36D21139-7D16-4FAD-B14F-F68684C7FF9C}.Debug|x86.Build.0 = Debug|Any CPU
+		{36D21139-7D16-4FAD-B14F-F68684C7FF9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36D21139-7D16-4FAD-B14F-F68684C7FF9C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36D21139-7D16-4FAD-B14F-F68684C7FF9C}.Release|x64.ActiveCfg = Release|Any CPU
+		{36D21139-7D16-4FAD-B14F-F68684C7FF9C}.Release|x64.Build.0 = Release|Any CPU
+		{36D21139-7D16-4FAD-B14F-F68684C7FF9C}.Release|x86.ActiveCfg = Release|Any CPU
+		{36D21139-7D16-4FAD-B14F-F68684C7FF9C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

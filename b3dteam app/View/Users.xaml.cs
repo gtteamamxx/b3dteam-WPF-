@@ -20,14 +20,64 @@ namespace b3dteam_app.View
     /// </summary>
     public partial class Users : UserControl
     {
+        public static ChatManager.Chat ChatEngine;
+        public static ChatManager.User ClientUser;
+
         public Users()
         {
             InitializeComponent();
+            ChatEngine = new ChatManager.Chat();
+            ClientUser = new ChatManager.User();
+
+            GetUserAndRooms();
+        }
+
+
+        private async void GetUserAndRooms()
+        {
+            listview_Contact.IsEnabled = false;
+
+            textblock_Update.Text = "Getting user...";
+            ClientUser = await ChatEngine.GetUser(helper.User.ClientUser.userid, GetLastMessage: true);
+
+            if (ClientUser == null)
+            {
+                throw new NotImplementedException();
+            }
+            else
+            {
+                ClientUser.OnMessageReceived += ClientUser_OnMessageReceived;
+                ClientUser.OnUserRoomsChanged += ClientUser_OnUserRoomsChanged; ; ;
+
+                textblock_Update.Text = "Getting talks...";
+                (await ClientUser.GetUserChatRooms()).ForEach(p => AddChatRoom(p));
+
+                ClientUser.StartListeningChanges();
+                textblock_Update.Text = "Your talks:";
+                listview_Contact.IsEnabled = true;
+            }
+        }
+
+        private void ClientUser_OnUserRoomsChanged(List<ChatManager.ChatRoom> ChatRoom, ChatManager.ChatRoom.RoomChangeType ChangeType)
+        {
+            if(ChangeType == ChatManager.ChatRoom.RoomChangeType.New)
+            {
+                ChatRoom.ForEach(p => AddChatRoom(p));
+            }
+            else if(ChangeType == ChatManager.ChatRoom.RoomChangeType.Deleted)
+            {
+                ChatRoom.ForEach(p => RemoveChatRoom(p));
+            }
+        }
+
+        private void ClientUser_OnMessageReceived(ChatManager.Message message)
+        {
+            throw new NotImplementedException();
         }
 
         private void button_AddContact_Click(object sender, RoutedEventArgs e)
         {
-            new UserUtilities.AddContact().ShowDialog();
+            new UserUtilities.AddContact(this).ShowDialog();
         }
 
         private void button_RemoveContact_Click(object sender, RoutedEventArgs e)
@@ -46,9 +96,57 @@ namespace b3dteam_app.View
 
         }
 
-        private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void listview_Contact_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
 
+        }
+
+        public async Task<bool> AddContactToList(ChatManager.User userToAdd = null, ChatManager.ChatRoom ChatRoom = null)
+        {
+            if(userToAdd != null)
+            {
+                var users = new List<ChatManager.User>();
+                users.Add(userToAdd);
+                var channel = await ChatEngine.CreateChatRoom(userToAdd.login, users, ClientUser);
+
+                if (channel == null)
+                {
+                    return false;
+                }
+            }
+
+            if(ChatRoom != null)
+            {
+
+            }
+
+            return true;
+        }
+
+        private void RemoveChatRoom(ChatManager.ChatRoom chatRoom)
+        {
+            listview_Contact.Items.Remove(Chat.FindVisualChildren<Grid>(this).First(p => p.Name == "chatroom" && int.Parse(((TextBlock)p.Children[0]).Text.Replace("#", "")) == chatRoom.Id));
+        }
+
+        private void AddChatRoom(ChatManager.ChatRoom chatRoom)
+        {
+            var grid = new Grid();
+
+            grid.Name = "chatroom";
+
+            grid.Children.Add(new TextBlock()
+            {
+                Foreground = new SolidColorBrush(Colors.Gray),
+                Text = $"#{chatRoom.Id}"
+            });
+
+            grid.Children.Add(new TextBlock()
+            {
+                Text = chatRoom.Name,
+                Margin = new Thickness(40, 0, 0, 0)
+            });
+
+            listview_Contact.Items.Add(grid);
         }
     }
 }

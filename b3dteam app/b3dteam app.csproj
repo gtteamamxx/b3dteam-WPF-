@@ -101,6 +101,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Model\ChatUser.cs" />
+    <Compile Include="Model\ListViewChatItem.cs" />
     <Compile Include="Model\Message.cs" />
     <Compile Include="Model\NotyficationHelper.cs" />
     <Compile Include="Model\Server.cs" />

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using SQLC;
 
 namespace helper
 {
@@ -33,31 +34,16 @@ namespace helper
             Status_Online
         }
 
-        public static SqlConnection SqlConnection;
-
         public static async Task<bool> ConnectToDatabase()
         {
-
-            using (var _sqlConnection = new SqlConnection())
+            using (var _sqlConnection = Connection.GetConnection())
             {
-                SqlConnectionStringBuilder sqlsb = new SqlConnectionStringBuilder();
-
-
-                sqlsb.DataSource = "b3dteam.mssql.somee.com";
-                sqlsb.WorkstationID = "b3dteam.mssql.somee.com";
-                sqlsb.InitialCatalog = "b3dteam";
-                sqlsb.PacketSize = 4096;
-                sqlsb.PersistSecurityInfo = false;
-                sqlsb.MultipleActiveResultSets = true;
-                _sqlConnection.ConnectionString = sqlsb.ConnectionString;
-
                 try
                 {
                     await _sqlConnection.OpenAsync();
 
                     if (_sqlConnection.State == ConnectionState.Open)
                     {
-                        SqlConnection = new SqlConnection(sqlsb.ConnectionString);
                         return true;
                     }
                     else
@@ -67,7 +53,6 @@ namespace helper
                 }
                 catch
                 {
-                    _sqlConnection.Close();
                     MessageBox.Show("Error while connecting to server", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return false;
                 }
@@ -86,42 +71,42 @@ namespace helper
             {
                 query = $"SELECT userid, login, usertype, lastactivity, userteams FROM USERS WHERE login = {login};";
             }
-             
+
             try
             {
-                using (var command = new SqlCommand(query, SqlConnection))
+                using (var SqlConnection = Connection.GetConnection())
                 {
-                    await SqlConnection.OpenAsync();
-
-                    using (SqlDataReader rd = await command.ExecuteReaderAsync())
+                    using (var command = new SqlCommand(query, SqlConnection))
                     {
-                        while (await rd.ReadAsync())
+                        await SqlConnection.OpenAsync();
+
+                        using (SqlDataReader rd = await command.ExecuteReaderAsync())
                         {
-                            int _userid = rd.GetInt32(0);
-                            string _login = rd.GetString(1);
-                            int _usertype = rd.GetInt32(2);
-                            int _lastactivity = rd.GetInt32(3);
-                            string _userteams = $"{rd.GetValue(4)}";
-
-                            SqlConnection.Close();
-
-                            return new User()
+                            while (await rd.ReadAsync())
                             {
-                                userid = _userid,
-                                login = _login,
-                                usertype = _usertype,
-                                lastactivity = _lastactivity,
-                                userteams = _userteams
-                            };
-                        }
+                                int _userid = rd.GetInt32(0);
+                                string _login = rd.GetString(1);
+                                int _usertype = rd.GetInt32(2);
+                                int _lastactivity = rd.GetInt32(3);
+                                string _userteams = $"{rd.GetValue(4)}";
 
-                        return null;
+                                return new User()
+                                {
+                                    userid = _userid,
+                                    login = _login,
+                                    usertype = _usertype,
+                                    lastactivity = _lastactivity,
+                                    userteams = _userteams
+                                };
+                            }
+
+                            return null;
+                        }
                     }
-                }
+                };
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                SqlConnection.Close();
                 return null;
             }
         }
@@ -133,37 +118,37 @@ namespace helper
 
             try
             {
-                using (var command = new SqlCommand(query, SqlConnection))
+                using (var SqlConnection = Connection.GetConnection())
                 {
-                    await SqlConnection.OpenAsync();
-
-                    using (SqlDataReader rd = await command.ExecuteReaderAsync())
+                    using (var command = new SqlCommand(query, SqlConnection))
                     {
-                        while(await rd.ReadAsync())
+                        await SqlConnection.OpenAsync();
+
+                        using (SqlDataReader rd = await command.ExecuteReaderAsync())
                         {
-                            string _login = rd.GetString(1);
-                            int _usertype = rd.GetInt32(2);
-                            int _lastactivity = rd.GetInt32(3);
-                            string _userteams = $"{rd.GetValue(4)}";
-                            listOfUsers.Add(new User()
+                            while (await rd.ReadAsync())
                             {
-                                userid = rd.GetInt32(0),
-                                login = _login,
-                                usertype = _usertype,
-                                lastactivity = _lastactivity,
-                                userteams = _userteams
-                            });
+                                string _login = rd.GetString(1);
+                                int _usertype = rd.GetInt32(2);
+                                int _lastactivity = rd.GetInt32(3);
+                                string _userteams = $"{rd.GetValue(4)}";
+
+                                listOfUsers.Add(new User()
+                                {
+                                    userid = rd.GetInt32(0),
+                                    login = _login,
+                                    usertype = _usertype,
+                                    lastactivity = _lastactivity,
+                                    userteams = _userteams
+                                });
+                            }
                         }
-
-                        SqlConnection.Close();
                     }
-                }
-
-                return listOfUsers;
+                    return listOfUsers;
+                };
             }
             catch
             {
-                SqlConnection.Close();
                 return null;
             }
         }
@@ -194,18 +179,20 @@ namespace helper
 
             try
             {
-                using (var command = new SqlCommand(query, SqlConnection))
+                using (var SqlConnection = Connection.GetConnection())
                 {
-                    await SqlConnection.OpenAsync();
-                    await command.ExecuteNonQueryAsync();
-                    SqlConnection.Close();
-                    User.ClientStatus = status;
-                    return true;
-                }
+                    using (var command = new SqlCommand(query, SqlConnection))
+                    {
+
+                        await SqlConnection.OpenAsync();
+                        await command.ExecuteNonQueryAsync();
+                        User.ClientStatus = status;
+                        return true;
+                    }
+                };
             }
             catch
             {
-                SqlConnection.Close();
                 MessageBox.Show("There was problem with registering an user.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return false;
             }
@@ -218,62 +205,60 @@ namespace helper
 
             try
             {
-                using (var command = new SqlCommand(query, SqlConnection))
+                using (var SqlConnection = Connection.GetConnection())
                 {
-                    await SqlConnection.OpenAsync();
-
-                    using (SqlDataReader rd = await command.ExecuteReaderAsync())
+                    using (var command = new SqlCommand(query, SqlConnection))
                     {
-                        rd.Read();
+                        await SqlConnection.OpenAsync();
 
-                        if (rd.HasRows == true)
+                        using (SqlDataReader rd = await command.ExecuteReaderAsync())
                         {
-                            int _userid = rd.GetInt32(0);
-                            string _login = rd.GetString(1);
-                            string _password = rd.GetString(2);
-                            string _email = rd.GetString(3);
-                            int _usertype = rd.GetInt32(4);
-                            int _lastactivity = rd.GetInt32(5);
-                            int _regtime = rd.GetInt32(6);
-                            string _userfriends = $"{rd.GetValue(7)}";
-                            string _messages = $"{rd.GetValue(8)}";
-                            string _userteams = $"{rd.GetValue(9)}";
+                            rd.Read();
 
-                            SqlConnection.Close();
-
-                            if (_usertype == 0)
+                            if (rd.HasRows == true)
                             {
-                                return new Tuple<LoginAccountStatus, User>(LoginAccountStatus.Account_Not_Activated, null);
+                                int _userid = rd.GetInt32(0);
+                                string _login = rd.GetString(1);
+                                string _password = rd.GetString(2);
+                                string _email = rd.GetString(3);
+                                int _usertype = rd.GetInt32(4);
+                                int _lastactivity = rd.GetInt32(5);
+                                int _regtime = rd.GetInt32(6);
+                                string _userfriends = $"{rd.GetValue(7)}";
+                                string _messages = $"{rd.GetValue(8)}";
+                                string _userteams = $"{rd.GetValue(9)}";
+
+                                if (_usertype == 0)
+                                {
+                                    return new Tuple<LoginAccountStatus, User>(LoginAccountStatus.Account_Not_Activated, null);
+                                }
+
+                                var user = new User
+                                {
+                                    userid = _userid,
+                                    login = _login,
+                                    password = _password,
+                                    email = _email,
+                                    lastactivity = _lastactivity,
+                                    regtime = _regtime,
+                                    usertype = _usertype,
+                                    userfriends = _userfriends,
+                                    messages = _messages,
+                                    userteams = _userteams,
+                                };
+
+                                User.ClientUser = user;
+
+                                return new Tuple<LoginAccountStatus, User>(LoginAccountStatus.Succesful, user);
                             }
 
-                            var user = new User
-                            {
-                                userid = _userid,
-                                login = _login,
-                                password = _password,
-                                email = _email,
-                                lastactivity = _lastactivity,
-                                regtime = _regtime,
-                                usertype = _usertype,
-                                userfriends = _userfriends,
-                                messages = _messages,
-                                userteams = _userteams,
-                            };
-
-                            User.ClientUser = user;
-
-                            return new Tuple<LoginAccountStatus, User>(LoginAccountStatus.Succesful, user);
+                            return new Tuple<LoginAccountStatus, User>(LoginAccountStatus.Bad_Authorization, null);
                         }
-
-                        SqlConnection.Close();
-
-                        return new Tuple<LoginAccountStatus, User>(LoginAccountStatus.Bad_Authorization, null);
                     }
-                }
+                };
             }
             catch
             {
-                SqlConnection.Close();
                 MessageBox.Show("There was problem with login.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return new Tuple<LoginAccountStatus, User>(LoginAccountStatus.Failed, null);
             }
@@ -285,17 +270,19 @@ namespace helper
 
             try
             {
-                using (var command = new SqlCommand(query, SqlConnection))
+                using (var SqlConnection = Connection.GetConnection())
                 {
-                    await SqlConnection.OpenAsync();
-                    var result = await command.ExecuteScalarAsync();
-                    SqlConnection.Close();
-                    return (string)result == login;
-                }
+                    using (var command = new SqlCommand(query, SqlConnection))
+                    {
+
+                        await SqlConnection.OpenAsync();
+                        var result = await command.ExecuteScalarAsync();
+                        return (string)result == login;
+                    }
+                };
             }
             catch
             {
-                SqlConnection.Close();
                 MessageBox.Show("There was problem with checking an user.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
@@ -307,17 +294,19 @@ namespace helper
 
             try
             {
-                using (var command = new SqlCommand(query, SqlConnection))
+                using (var SqlConnection = Connection.GetConnection())
                 {
-                    await SqlConnection.OpenAsync();
-                    var result = await command.ExecuteScalarAsync();
-                    SqlConnection.Close();
-                    return (string)result == email;
-                }
+                    using (var command = new SqlCommand(query, SqlConnection))
+                    {
+
+                        await SqlConnection.OpenAsync();
+                        var result = await command.ExecuteScalarAsync();
+                        return (string)result == email;
+                    }
+                };
             }
             catch
             {
-                SqlConnection.Close();
                 MessageBox.Show("There was problem with checking a email.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
@@ -335,18 +324,19 @@ namespace helper
 
             try
             {
-                using (var command = new SqlCommand(query, SqlConnection))
+                using (var SqlConnection = Connection.GetConnection())
                 {
-                    User.ClientStatus = status;
-                    await SqlConnection.OpenAsync();
-                    await command.ExecuteNonQueryAsync();
-                    SqlConnection.Close();
-                    return true;
+                    using (var command = new SqlCommand(query, SqlConnection))
+                    {
+                        User.ClientStatus = status;
+                        await SqlConnection.OpenAsync();
+                        await command.ExecuteNonQueryAsync();
+                        return true;
+                    }
                 }
             }
             catch
             {
-                SqlConnection.Close();
                 return false;
             }
         }
@@ -360,23 +350,21 @@ namespace helper
         {
             string query = "SELECT html FROM EVENTS";
 
-            using (var command = new SqlCommand(query, SqlConnection))
+            try
             {
-                try
+                using (var SqlConnection = Connection.GetConnection())
                 {
-                    await SqlConnection.OpenAsync();
-
-                    var returnPlainHtml = ((await command.ExecuteScalarAsync()) as string);
-
-                    SqlConnection.Close();
-
-                    return returnPlainHtml;
-                }
-                catch
-                {
-                    SqlConnection.Close();
-                    return null;
-                }
+                    using (var command = new SqlCommand(query, SqlConnection))
+                    {
+                        await SqlConnection.OpenAsync();
+                        var returnPlainHtml = ((await command.ExecuteScalarAsync()) as string);
+                        return returnPlainHtml;
+                    }
+                };
+            }
+            catch
+            {
+                return null;
             }
         }
 
@@ -384,23 +372,21 @@ namespace helper
         {
             string query = "SELECT html FROM INFORMATIONS";
 
-            using (var command = new SqlCommand(query, SqlConnection))
+            try
             {
-                try
+                using (var SqlConnection = Connection.GetConnection())
                 {
-                    await SqlConnection.OpenAsync();
-
-                    var returnPlainHtml = ((await command.ExecuteScalarAsync()) as string);
-
-                    SqlConnection.Close();
-
-                    return returnPlainHtml;
-                }
-                catch
-                {
-                    SqlConnection.Close();
-                    return null;
-                }
+                    using (var command = new SqlCommand(query, SqlConnection))
+                    {
+                        await SqlConnection.OpenAsync();
+                        var returnPlainHtml = ((await command.ExecuteScalarAsync()) as string);
+                        return returnPlainHtml;
+                    }
+                };
+            }
+            catch
+            {
+                return null;
             }
         }
     }
