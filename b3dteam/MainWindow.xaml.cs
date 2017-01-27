@@ -204,6 +204,7 @@ namespace b3dteam
             Run(helper.SQLManager.Ball3D_Status.Status_Offine);
         }
 
+        static bool _resettedUser = false;
         public async void Run(helper.SQLManager.Ball3D_Status status)
         {
             Ball3DStatus.ClientStatus = status;
@@ -214,11 +215,49 @@ namespace b3dteam
             button_RunApp_Offine.Visibility = Visibility.Collapsed;
             button_RunApp_Online.Visibility = Visibility.Collapsed;
 
-            if (!(await CheckInternetConnection()) || !(await CheckSQLConnection()) || !CheckUserLogin())
+            if (!(await CheckInternetConnection()) || !(await CheckSQLConnection()))
             {
+                MessageBox.Show("There was problem with internet/database connection.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                AskUserForStatus();
                 return;
             }
 
+            switch(CheckUserLogin())
+            {
+                case false:
+                    string message = $"There was problem with logging into account.{Environment.NewLine}";
+
+                    ClientUser = null;
+                    new helper.User().ResetUser();
+
+                    if (_resettedUser == false)
+                    {
+                        MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        CheckUserLogin();
+                        _resettedUser = true;
+                        return;
+                    }
+                    else
+                    {
+                        message += "Do you want to login again?";
+                        var res = MessageBox.Show(message, "Error", MessageBoxButton.YesNo, MessageBoxImage.Error);
+                    
+                        if(res == MessageBoxResult.Yes)
+                        {
+                            CheckUserLogin();
+                            return;
+                        }
+                        else
+                        {
+                            this.Close();
+                        }
+
+                    }
+                    return;
+                case null:
+                    return;
+            }
+            
             text_Info.Content = "";
 
             this.Hide();
@@ -277,7 +316,7 @@ namespace b3dteam
 
         private bool _LoginWindowClosedEventSubscribed = false;
 
-        public bool CheckUserLogin()
+        public bool? CheckUserLogin()
         {
             text_Info.Content = "Checking user...";
 
@@ -288,6 +327,13 @@ namespace b3dteam
 
             else if (Properties.Settings.Default.userid != -1 && Properties.Settings.Default.autologin == true)
             {
+                var user = helper.SQLManager.GetUser(Properties.Settings.Default.userid).Result;
+
+                if(user == null)
+                {
+                    return false;
+                }
+
                 ClientUser = helper.User.ClientUser = new helper.User()
                 {
                     userid = Properties.Settings.Default.userid,
@@ -327,7 +373,7 @@ namespace b3dteam
 
                 loginWindow.ShowDialog();
 
-                return false;
+                return null;
             }
         }
 

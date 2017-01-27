@@ -68,7 +68,7 @@ namespace b3dteam_app.View
             }
             else if(ChangeType == ChatManager.ChatRoom.RoomChangeType.Deleted)
             {
-                ChatRoom.ForEach(p => RemoveChatRoom(p));
+                ChatRoom.ForEach(async p => await RemoveChatRoom(p));
             }
         }
 
@@ -125,16 +125,20 @@ namespace b3dteam_app.View
             return true;
         }
 
-        public async Task<bool> RemoveChatRoom(ChatManager.ChatRoom chatRoom)
+        public async Task<bool> RemoveChatRoom(ChatManager.ChatRoom chatRoom, bool UserLeave = false)
         {
             if (chatRoom != null)
             {
-                var res = await ClientUser.RemoveThisUserFromChatRoom(chatRoom);
-
-                if(res == false)
+                if (UserLeave)
                 {
-                    return false;
+                    var res = await ClientUser.RemoveThisUserFromChatRoom(chatRoom);
+
+                    if (res == false)
+                    {
+                        return false;
+                    }
                 }
+
                 var itemToRemove = Chat.FindVisualChildren<Grid>(this).First(p => p.Name == "chatroom" && int.Parse(((TextBlock)p.Children[0]).Text.Replace("#", "")) == chatRoom.Id);
                 listview_Contact.Items.Remove(itemToRemove);
             }

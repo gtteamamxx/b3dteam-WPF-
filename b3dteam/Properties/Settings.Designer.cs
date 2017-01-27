@@ -146,18 +146,6 @@ namespace b3dteam.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string userfriends {
-            get {
-                return ((string)(this["userfriends"]));
-            }
-            set {
-                this["userfriends"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string messages {
             get {
                 return ((string)(this["messages"]));

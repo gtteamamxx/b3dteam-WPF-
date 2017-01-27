@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using SQLC;
+using MySql.Data.MySqlClient;
 
 namespace helper
 {
@@ -76,11 +77,11 @@ namespace helper
             {
                 using (var SqlConnection = Connection.GetConnection())
                 {
-                    using (var command = new SqlCommand(query, SqlConnection))
+                    using (var command = new MySqlCommand(query, SqlConnection))
                     {
                         await SqlConnection.OpenAsync();
 
-                        using (SqlDataReader rd = await command.ExecuteReaderAsync())
+                        using (var rd = await command.ExecuteReaderAsync())
                         {
                             while (await rd.ReadAsync())
                             {
@@ -120,11 +121,11 @@ namespace helper
             {
                 using (var SqlConnection = Connection.GetConnection())
                 {
-                    using (var command = new SqlCommand(query, SqlConnection))
+                    using (var command = new MySqlCommand(query, SqlConnection))
                     {
                         await SqlConnection.OpenAsync();
 
-                        using (SqlDataReader rd = await command.ExecuteReaderAsync())
+                        using (var rd = await command.ExecuteReaderAsync())
                         {
                             while (await rd.ReadAsync())
                             {
@@ -175,13 +176,13 @@ namespace helper
 
         private static async Task<bool?> _RegisterNewUser(Ball3D_Status status, string login, string password, string email)
         {
-            string query = $"INSERT INTO USERS(login, password, email, usertype, lastactivity, regtime) VALUES('{login}', '{Cryptography.Sha256(password)}', '{email}', 0, {(status == Ball3D_Status.Status_Offine ? 0 : GetTimeStamp())}, {GetTimeStamp()});";
+            string query = $"INSERT INTO USERS(login, password, email, usertype, lastactivity, regtime, messages, userteams) VALUES('{login}', '{Cryptography.Sha256(password)}', '{email}', 0, {(status == Ball3D_Status.Status_Offine ? 0 : GetTimeStamp())}, {GetTimeStamp()}, '', '');";
 
             try
             {
                 using (var SqlConnection = Connection.GetConnection())
                 {
-                    using (var command = new SqlCommand(query, SqlConnection))
+                    using (var command = new MySqlCommand(query, SqlConnection))
                     {
 
                         await SqlConnection.OpenAsync();
@@ -201,17 +202,17 @@ namespace helper
 
         public static async Task<Tuple<LoginAccountStatus, User>> LoginUser(string login, string password)
         {
-            string query = $"SELECT * FROM USERS WHERE login = '{login}' AND password = '{password}';";
+            string query = $"SELECT * FROM USERS WHERE login = '{login}' AND password LIKE '%{password.Remove(password.Length-1, 1)}%';";
 
             try
             {
                 using (var SqlConnection = Connection.GetConnection())
                 {
-                    using (var command = new SqlCommand(query, SqlConnection))
+                    using (var command = new MySqlCommand(query, SqlConnection))
                     {
                         await SqlConnection.OpenAsync();
 
-                        using (SqlDataReader rd = await command.ExecuteReaderAsync())
+                        using (var rd = await command.ExecuteReaderAsync())
                         {
                             rd.Read();
 
@@ -224,9 +225,8 @@ namespace helper
                                 int _usertype = rd.GetInt32(4);
                                 int _lastactivity = rd.GetInt32(5);
                                 int _regtime = rd.GetInt32(6);
-                                string _userfriends = $"{rd.GetValue(7)}";
-                                string _messages = $"{rd.GetValue(8)}";
-                                string _userteams = $"{rd.GetValue(9)}";
+                                string _messages = $"{rd.GetValue(7)}";
+                                string _userteams = $"{rd.GetValue(8)}";
 
                                 if (_usertype == 0)
                                 {
@@ -242,7 +242,6 @@ namespace helper
                                     lastactivity = _lastactivity,
                                     regtime = _regtime,
                                     usertype = _usertype,
-                                    userfriends = _userfriends,
                                     messages = _messages,
                                     userteams = _userteams,
                                 };
@@ -272,9 +271,8 @@ namespace helper
             {
                 using (var SqlConnection = Connection.GetConnection())
                 {
-                    using (var command = new SqlCommand(query, SqlConnection))
+                    using (var command = new MySqlCommand(query, SqlConnection))
                     {
-
                         await SqlConnection.OpenAsync();
                         var result = await command.ExecuteScalarAsync();
                         return (string)result == login;
@@ -296,7 +294,7 @@ namespace helper
             {
                 using (var SqlConnection = Connection.GetConnection())
                 {
-                    using (var command = new SqlCommand(query, SqlConnection))
+                    using (var command = new MySqlCommand(query, SqlConnection))
                     {
 
                         await SqlConnection.OpenAsync();
@@ -326,7 +324,7 @@ namespace helper
             {
                 using (var SqlConnection = Connection.GetConnection())
                 {
-                    using (var command = new SqlCommand(query, SqlConnection))
+                    using (var command = new MySqlCommand(query, SqlConnection))
                     {
                         User.ClientStatus = status;
                         await SqlConnection.OpenAsync();
@@ -354,10 +352,11 @@ namespace helper
             {
                 using (var SqlConnection = Connection.GetConnection())
                 {
-                    using (var command = new SqlCommand(query, SqlConnection))
+                    using (var command = new MySqlCommand(query, SqlConnection))
                     {
                         await SqlConnection.OpenAsync();
                         var returnPlainHtml = ((await command.ExecuteScalarAsync()) as string);
+                        SqlConnection.Close();
                         return returnPlainHtml;
                     }
                 };
@@ -374,12 +373,13 @@ namespace helper
 
             try
             {
-                using (var SqlConnection = Connection.GetConnection())
+                using (var MySqlConnection = Connection.GetConnection())
                 {
-                    using (var command = new SqlCommand(query, SqlConnection))
+                    using (var command = new MySqlCommand(query, MySqlConnection))
                     {
-                        await SqlConnection.OpenAsync();
+                        await MySqlConnection.OpenAsync();
                         var returnPlainHtml = ((await command.ExecuteScalarAsync()) as string);
+                        MySqlConnection.Close();
                         return returnPlainHtml;
                     }
                 };

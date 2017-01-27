@@ -66,7 +66,7 @@ namespace b3dteam_app.View.UserUtilities
             {
                 return;
             }
-            if(await usersWindow.RemoveChatRoom(selectedRoom))
+            if(await usersWindow.RemoveChatRoom(selectedRoom, true))
             {
                 MessageBox.Show("Talk has been removed");
                 listview_Users.Items.Remove(listview_Users.SelectedItem);

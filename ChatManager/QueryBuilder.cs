@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
+using MySql.Data.MySqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +13,7 @@ namespace ChatManager
         private List<User> _TempListOfUsers;
         private List<ChatRoom> _TempListOfChatRooms;
         private List<Message> _TempListOfMessages;
+
         public QueryBuilder()
         {
             _TempListOfUsers = new List<User>();
@@ -29,13 +30,13 @@ namespace ChatManager
                 return tempResult;
             }
 
-            var query = $"SELECT * FROM MESSAGE WHERE message_id = {MessageId} AND chat_room_id = {RoomId};";
+            var query = $"SELECT * FROM MESSAGES WHERE message_id = {MessageId} AND chat_room_id = {RoomId};";
 
             try
             {
                 using (var _Connection = Connection.GetConnection())
                 {
-                    using (var command = new SqlCommand(query, _Connection))
+                    using (var command = new MySqlCommand(query, _Connection))
                     {
                         await _Connection.OpenAsync();
 
@@ -77,13 +78,13 @@ namespace ChatManager
         #region Get Messages
         protected async Task<List<Message>> _GetMessages(int RoomId, int Limit = 100)
         {
-            var query = $"SELECT TOP {Limit} * FROM MESSAGE WHERE chat_room_id = {RoomId} ORDER BY message_id DESC;";
+            var query = $"SELECT * FROM MESSAGES WHERE chat_room_id = {RoomId} ORDER BY message_id DESC LIMIT {Limit};";
 
             try
             {
                 using (var _Connection = Connection.GetConnection())
                 {
-                    using (var command = new SqlCommand(query, _Connection))
+                    using (var command = new MySqlCommand(query, _Connection))
                     {
 
                         await _Connection.OpenAsync();
@@ -126,12 +127,12 @@ namespace ChatManager
         #region Send Message
         protected async Task<bool> _SendMessage(int RoomId, User user, string Text)
         {
-            var query = $"INSERT INTO MESSAGE(chat_room_id, message, owner, timestamp, owner_name) VALUES ({RoomId}, '{Text}', {user.userid}, {Chat.GetTimeStamp()}, '{user.login}');";
+            var query = $"INSERT INTO MESSAGES(chat_room_id, message, owner, timestamp, owner_name) VALUES ({RoomId}, '{Text}', {user.userid}, {Chat.GetTimeStamp()}, '{user.login}');";
             try
             {
                 using (var _Connection = Connection.GetConnection())
                 {
-                    using (var command = new SqlCommand(query, _Connection))
+                    using (var command = new MySqlCommand(query, _Connection))
                     {
                         await _Connection.OpenAsync();
                         await command.ExecuteNonQueryAsync();
@@ -158,18 +159,18 @@ namespace ChatManager
             }
             if (Users != null)
             {
-                query += $"UPDATE CHAT_ROOM SET users = '{GetTextFromList(Users, "userid")}' WHERE chat_room_id = {ChatRoom.Id};";
+                query += $" UPDATE CHAT_ROOM SET users = '{GetTextFromList(Users, "userid")}' WHERE chat_room_id = {ChatRoom.Id};";
             }
             if (Owner != null)
             {
-                query += $"UPDATE CHAT_ROOM SET owner = '{Owner.userid}' WHERE chat_room_id = {ChatRoom.Id};";
+                query += $" UPDATE CHAT_ROOM SET owner = '{Owner.userid}' WHERE chat_room_id = {ChatRoom.Id};";
             }
 
             try
             {
                 using (var _Connection = Connection.GetConnection())
                 {
-                    using (var command = new SqlCommand(query, _Connection))
+                    using (var command = new MySqlCommand(query, _Connection))
                     {
                         await _Connection.OpenAsync();
                         await command.ExecuteNonQueryAsync();
@@ -194,15 +195,15 @@ namespace ChatManager
         #region Create Chat Room
         protected async Task<ChatRoom> _CreateChatRoom(string Name, List<User> Users, User Owner)
         {
-            var query = $"INSERT INTO CHAT_ROOM(room_name, users, owner) VALUES ('{Name}', '";
+            var query = $"INSERT INTO CHAT_ROOM(room_name, users, owner, owner_name) VALUES ('{Name}', '";
             query += GetTextFromList<User>(Users, "userid");
-            query += $"', {Owner.userid}); SELECT TOP 1 chat_room_id FROM CHAT_ROOM ORDER BY chat_room_id DESC;";
+            query += $"', {Owner.userid}, '{Owner.login}'); SELECT `chat_room_id` FROM `CHAT_ROOM` ORDER BY `chat_room_id` DESC LIMIT 1;";
 
             try
             {
                 using (var _Connection = Connection.GetConnection())
                 {
-                    using (var command = new SqlCommand(query, _Connection))
+                    using (var command = new MySqlCommand(query, _Connection))
                     {
                         await _Connection.OpenAsync();
 
@@ -216,7 +217,8 @@ namespace ChatManager
                         query = "";
                         foreach (var user in chatRoom.Users)
                         {
-                            query += $"UPDATE USERS SET messages = (convert(nvarchar(max), (SELECT messages FROM USERS WHERE userid = {user.userid})) + '{chatRoom.Id}#') WHERE userid = {user.userid}; ";
+                            query += $" SET @temp = CONCAT( (SELECT `messages` FROM `USERS` WHERE `userid` = {user.userid} ) , '{chatRoom.Id}#'); ";
+                            query += $"UPDATE `USERS` SET `messages` = @temp WHERE `userid` = {user.userid};";
                         }
 
                         command.CommandText = query;
@@ -231,8 +233,9 @@ namespace ChatManager
                     }
                 };
             }
-            catch
+            catch(Exception ex)
             {
+                    ;
                 return null;
             }
         }
@@ -259,18 +262,18 @@ namespace ChatManager
         {
             var userChatSequence = User.messages.Replace($"{ChatRoom.Id}#", "");
 
-            string query = $"UPDATE USERS SET messages = '{userChatSequence}' WHERE userid = {User.userid};";
-            query += " DECLARE @string VARCHAR(512);";
-            query += " DECLARE @SQL VARCHAR(1024); ";
-            query += $" SET @string = REPLACE((SELECT users FROM CHAT_ROOM WHERE chat_room_id = {ChatRoom.Id}), '{User.userid}#', ''); ";
-            query += $" SET @SQL = 'UPDATE CHAT_ROOM SET users = ''' + @string + ''' WHERE chat_room_id = {ChatRoom.Id};'; ";
-            query += " EXECUTE(@SQL)";
+            string query = $@"
+            UPDATE USERS SET messages = '{userChatSequence}' WHERE userid = {User.userid};
+            SET @v_string = TRIM(REPLACE((SELECT users FROM CHAT_ROOM WHERE chat_room_id = {ChatRoom.Id}), '{User.userid}#', '')); 
+            SET @v_sql = 'CONCAT('UPDATE CHAT_ROOM SET users = ''', @v_string, ''' WHERE chat_room_id = {ChatRoom.Id};'); 
+            PREPARE sqlquery FROM @v_sql;
+            EXECUTE sqlquery;";
 
             try
             {
                 using (var _Connection = Connection.GetConnection())
                 {
-                    using (var command = new SqlCommand(query, _Connection))
+                    using (var command = new MySqlCommand(query, _Connection))
                     {
                         await _Connection.OpenAsync();
                         await command.ExecuteNonQueryAsync();
@@ -296,7 +299,7 @@ namespace ChatManager
             {
                 using (var _Connection = Connection.GetConnection())
                 {
-                    using (var command = new SqlCommand(query, _Connection))
+                    using (var command = new MySqlCommand(query, _Connection))
                     {
                         await _Connection.OpenAsync();
                         await command.ExecuteNonQueryAsync();
@@ -365,21 +368,23 @@ namespace ChatManager
 
         protected string _GetQueryStringForChatRoomsOfUser(int UserId)
         {
-            string  query = "DECLARE @string VARCHAR(512);";
-            query += "DECLARE @SQL VARCHAR(1024);";
-            query += $"SET @string = REPLACE((SELECT messages FROM USERS WHERE userid = {UserId}), '#', ', ' );";
-            query += " if len(@string) = 0";
-            query += " BEGIN";
-            query += " SELECT '' as nothing;";
-            query += " END";
-            query += " ELSE";
-            query += " BEGIN";
-            query += " SET @string = left(@string, len(@string) - 1);";
-            query += " SET @SQL = 'SELECT * FROM CHAT_ROOM WHERE chat_room_id IN(' + (@string) + ');';";
-            query += " EXECUTE(@SQL);";
-            query += " END";
+            string  query = $@"
+             DROP PROCEDURE IF EXISTS GETUSERCHATROOMS;
+            CREATE PROCEDURE GETUSERCHATROOMS(out v_sql VARCHAR(512))
+            BEGIN
+                SET @v_string = TRIM(REPLACE((SELECT messages FROM USERS WHERE userid = {UserId}), '#', ', '));
+            SET @v_len = CHAR_LENGTH(@v_string);
+            IF @v_len = 0 THEN
+                SET v_sql = 'SELECT '''' as nothing;';
+            ELSE
+                SET v_sql = CONCAT('SELECT * FROM CHAT_ROOM WHERE chat_room_id IN(', LEFT(@v_string, @v_len - 1), ');');
+            END IF;
+            END;
+            CALL GETUSERCHATROOMS(@v_sqlquery);
+            PREPARE v_query FROM @v_sqlquery;
+            EXECUTE v_query; ";
 
-            return query;
+            return query.Replace(Environment.NewLine, "");
         }
         protected async Task<List<T>> _GetMultiListFromIdies<T>(IEnumerable<int> ListOfId, int UserId = -1, bool NewList = false)
         {
@@ -409,7 +414,7 @@ namespace ChatManager
             {
                 using (var _Connection = Connection.GetConnection())
                 {
-                    using (var command = new SqlCommand(query, _Connection))
+                    using (var command = new MySqlCommand(query, _Connection))
                     {
                         await _Connection.OpenAsync();
 
@@ -447,8 +452,8 @@ namespace ChatManager
                                         usertype = reader.GetInt32(4),
                                         lastactivity = reader.GetInt32(5),
                                         regtime = reader.GetInt32(6),
-                                        messages = $"{reader.GetValue(8)}",
-                                        userteams = $"{reader.GetValue(9)}"
+                                        messages = $"{reader.GetValue(7)}",
+                                        userteams = $"{reader.GetValue(8)}"
                                     };
 
                                     if(!_TempListOfUsers.Any(p => p.userid == user.userid))
@@ -487,14 +492,14 @@ namespace ChatManager
             }
             else
             {
-                query += $"room_name = '{Name};";
+                query += $"strcmp(room_name, '{Name}');";
             }
 
             try
             {
                 using (var _Connection = Connection.GetConnection())
                 {
-                    using (var command = new SqlCommand(query, _Connection))
+                    using (var command = new MySqlCommand(query, _Connection))
                     {
                         await _Connection.OpenAsync();
 
@@ -547,20 +552,19 @@ namespace ChatManager
             }
             else
             {
-                query += $"login  = '{Login};";
+                query += $"strcmp(login, '{Login}');";
             }
 
             if(GetLastMessage == true)
             {
-                query += "SELECT TOP 1 message_id FROM MESSAGE ORDER BY message_id DESC;";
+                query += " SELECT message_id FROM MESSAGES ORDER BY message_id DESC LIMIT 1;";
             }
 
             try
             {
-
                 using (var _Connection = Connection.GetConnection())
                 {
-                    using (var command = new SqlCommand(query, _Connection))
+                    using (var command = new MySqlCommand(query, _Connection))
                     {
                         await _Connection.OpenAsync();
 
@@ -578,8 +582,8 @@ namespace ChatManager
                                     usertype = reader.GetInt32(4),
                                     lastactivity = reader.GetInt32(5),
                                     regtime = reader.GetInt32(6),
-                                    messages = $"{reader.GetValue(8)}",
-                                    userteams = $"{reader.GetValue(9)}"
+                                    messages = $"{reader.GetValue(7)}",
+                                    userteams = $"{reader.GetValue(8)}"
                                 };
                                 if (!_TempListOfUsers.Any(p => p.userid == user.userid))
                                 {

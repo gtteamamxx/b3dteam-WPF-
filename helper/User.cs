@@ -45,7 +45,6 @@ namespace helper
         public int usertype { get; set; }
         public int lastactivity { get; set; }
         public int regtime { get; set; }
-        public string userfriends { get; set; }
         public string messages { get; set; }
         public string userteams { get; set; }
         public int autologin { get; set; }

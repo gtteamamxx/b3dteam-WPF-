@@ -1,7 +1,7 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -43,9 +43,10 @@ namespace ChatManager
 
             worker.DoWork += (s, e) =>
             {
-                SqlCommand command = new SqlCommand();
+                MySqlCommand command = new MySqlCommand();
                 command.CommandType = System.Data.CommandType.Text;
                 string query = string.Empty;
+
                 while (true)
                 {
                     Task.Delay(TimeSpan.FromSeconds(CHECK_MESSAGE_TIME)).GetAwaiter().GetResult();
@@ -56,13 +57,12 @@ namespace ChatManager
 
                         query = $"SELECT messages FROM USERS WHERE userid = {this.userid};";
 
-                        if (messages.Length > 0)
+                        if (this.messages.Length > 0)
                         {
-                            query += $"SELECT * FROM MESSAGE WHERE message_id > {this._LastMessageId} AND chat_room_id IN ({GetIDSequence(GetListOfIdFromText(this.messages))}) ORDER BY message_id DESC;";
+                            query += $"SELECT * FROM MESSAGES WHERE message_id > {this._LastMessageId} AND chat_room_id IN ({GetIDSequence(GetListOfIdFromText(this.messages))}) ORDER BY message_id DESC;";
                         }
 
                         int i = 0;
-
                         command.CommandText = query;
 
                         _Connection.Open();

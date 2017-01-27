@@ -1,6 +1,6 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,13 +9,12 @@ namespace SQLC
 {
     public class Connection
     {
-        public static SqlConnection GetConnection()
+        public static MySqlConnection GetConnection()
         {
-            SqlConnectionStringBuilder sqlsb = new SqlConnectionStringBuilder();
+            MySqlConnectionStringBuilder sqlsb = new MySqlConnectionStringBuilder();
 
 
-
-            return new SqlConnection(sqlsb.ConnectionString);
+            return new MySqlConnection(sqlsb.ConnectionString);
         }
     }
 }

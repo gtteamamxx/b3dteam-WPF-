@@ -11,11 +11,6 @@ namespace ChatManager
     public class Chat : QueryBuilder
     {
 
-        public Chat()
-        {
-            SqlDependency.Start(SQLC.Connection.GetConnection().ConnectionString);
-        }
-
         public async Task<ChatRoom> GetChatRoom(int Id = -1, string Name = "")
         {
             return await _GetChatRoom(Id, Name);
