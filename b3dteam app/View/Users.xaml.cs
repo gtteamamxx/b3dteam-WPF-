@@ -70,6 +70,8 @@ namespace b3dteam_app.View
             {
                 ChatRoom.ForEach(async p => await RemoveChatRoom(p));
             }
+
+            textblock_Update.Text = $"Your talks: {ClientUser.GetUserChatRooms(false).Result.Count}";
         }
 
         private void ClientUser_OnMessageReceived(ChatManager.Message message)

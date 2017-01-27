@@ -14,6 +14,7 @@ namespace SQLC
             MySqlConnectionStringBuilder sqlsb = new MySqlConnectionStringBuilder();
 
 
+
             return new MySqlConnection(sqlsb.ConnectionString);
         }
     }

@@ -264,10 +264,10 @@ namespace ChatManager
 
             string query = $@"
             UPDATE USERS SET messages = '{userChatSequence}' WHERE userid = {User.userid};
-            SET @v_string = TRIM(REPLACE((SELECT users FROM CHAT_ROOM WHERE chat_room_id = {ChatRoom.Id}), '{User.userid}#', '')); 
-            SET @v_sql = 'CONCAT('UPDATE CHAT_ROOM SET users = ''', @v_string, ''' WHERE chat_room_id = {ChatRoom.Id};'); 
+            SET @v_string = TRIM(REPLACE((SELECT users FROM CHAT_ROOM WHERE chat_room_id = {ChatRoom.Id}), '{User.userid}#', ''));
+            SET @v_sql = CONCAT('UPDATE CHAT_ROOM SET users = ', '''', @v_string, ''' WHERE chat_room_id = {ChatRoom.Id};');
             PREPARE sqlquery FROM @v_sql;
-            EXECUTE sqlquery;";
+            EXECUTE sqlquery;".Replace("\r\n", "");
 
             try
             {
