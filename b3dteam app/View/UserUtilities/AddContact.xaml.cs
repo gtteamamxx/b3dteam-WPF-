@@ -24,11 +24,19 @@ namespace b3dteam_app.View.UserUtilities
         {
             this.UsersWindow = usersWindow;
             InitializeComponent();
+            SetButtonsStatus(false);
         }
 
         private void textbox_FindBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-
+            if(textbox_FindBox.Text.Trim().Length == 0)
+            {
+                SetButtonsStatus(false);
+            }
+            else
+            {
+                SetButtonsStatus(true);
+            }
         }
 
         private async void button_Add_Click(object sender, RoutedEventArgs e)
@@ -56,7 +64,7 @@ namespace b3dteam_app.View.UserUtilities
                 }
                 else
                 {
-                    if (await Users.ClientUser.IsChatRoomWithUser(user))
+                    if (Users.ClientUser.IsPrivateChatRoomWithUser(user))
                     {
                         MessageBox.Show("You have alerady talk with this user!");
                     }
@@ -65,6 +73,7 @@ namespace b3dteam_app.View.UserUtilities
                         if (await UsersWindow.AddContactToList(user))
                         {
                             MessageBox.Show("User has been added to your contact list. Wait a while for refresh.");
+                            listview_Users.Items.Remove(listview_Users.SelectedItem);
                         }
                         else
                         {
@@ -98,8 +107,8 @@ namespace b3dteam_app.View.UserUtilities
             }
             else
             {
-                (await helper.SQLManager.GetUsers()).Where(p => (p.login.ToLower().StartsWith(textbox_FindBox.Text.ToLower()))).ToList().ForEach(
-                    p => listview_Users.Items.Add(new TextBlock() { Text = $"{p.userid}# {p.login}" }));
+                (await helper.SQLManager.GetUsers()).Where(p => (p.login.ToLower().StartsWith(textbox_FindBox.Text.ToLower()))).Where(p => !Users.ClientUser.IsPrivateChatRoomWithUser(new ChatManager.User() { userid = p.userid })).ToList().ForEach(
+                    p => listview_Users.Items.Add(new TextBlock() {Text = $"{p.userid}# {p.login}" }));
             }
 
             if(listview_Users.Items.Count == 0)

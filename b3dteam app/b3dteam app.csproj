@@ -144,6 +144,9 @@
     <Compile Include="View\UserUtilities\AddContact.xaml.cs">
       <DependentUpon>AddContact.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\UserUtilities\RemoveContact.xaml.cs">
+      <DependentUpon>RemoveContact.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\UserUtilities\UserList.xaml.cs">
       <DependentUpon>UserList.xaml</DependentUpon>
     </Compile>
@@ -208,6 +211,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\UserUtilities\AddContact.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\UserUtilities\RemoveContact.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

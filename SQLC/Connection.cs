@@ -14,6 +14,7 @@ namespace SQLC
             SqlConnectionStringBuilder sqlsb = new SqlConnectionStringBuilder();
 
 
+
             return new SqlConnection(sqlsb.ConnectionString);
         }
     }

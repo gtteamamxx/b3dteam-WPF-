@@ -10,9 +10,25 @@ namespace ChatManager
 {
     public class QueryBuilder
     {
+        private List<User> _TempListOfUsers;
+        private List<ChatRoom> _TempListOfChatRooms;
+        private List<Message> _TempListOfMessages;
+        public QueryBuilder()
+        {
+            _TempListOfUsers = new List<User>();
+            _TempListOfChatRooms = new List<ChatRoom>();
+            _TempListOfMessages = new List<Message>();
+        }
+
         #region Get Message
         protected async Task<Message> _GetMessage(int RoomId, int MessageId)
         {
+            var tempResult = _TempListOfMessages.FirstOrDefault(p => p.chat_room_id == RoomId && p.message_id == MessageId);
+            if(tempResult != null)
+            {
+                return tempResult;
+            }
+
             var query = $"SELECT * FROM MESSAGE WHERE message_id = {MessageId} AND chat_room_id = {RoomId};";
 
             try
@@ -29,14 +45,21 @@ namespace ChatManager
 
                             while (await reader.ReadAsync())
                             {
-                                return new Message()
+                                var message = new Message()
                                 {
                                     message_id = reader.GetInt32(0),
                                     chat_room_id = reader.GetInt32(1),
                                     message = reader.GetString(2),
-                                    owner = await _GetUser(reader.GetInt32(3)),
-                                    timestamp = reader.GetInt32(4)
+                                    ownerId = reader.GetInt32(3),
+                                    timestamp = reader.GetInt32(4),
+                                    ownerName = reader.GetString(5)
                                 };
+
+                                if(!_TempListOfMessages.Any(p => p.message_id == message.message_id))
+                                {
+                                    _TempListOfMessages.Add(message);
+                                }
+                                return message;
                             }
 
                             return null;
@@ -71,14 +94,21 @@ namespace ChatManager
 
                             while (await reader.ReadAsync())
                             {
-                                listOfMessages.Add(new Message()
+                                var message = new Message()
                                 {
                                     message_id = reader.GetInt32(0),
                                     chat_room_id = reader.GetInt32(1),
                                     message = reader.GetString(2),
-                                    owner = await _GetUser(reader.GetInt32(3)),
-                                    timestamp = reader.GetInt32(4)
-                                });
+                                    ownerId = reader.GetInt32(3),
+                                    timestamp = reader.GetInt32(4),
+                                    ownerName = reader.GetString(5)
+                                };
+                                listOfMessages.Add(message);
+
+                                if (!_TempListOfMessages.Any(p => p.message_id == message.message_id))
+                                {
+                                    _TempListOfMessages.Add(message);
+                                }
                             }
 
                             return listOfMessages;
@@ -94,9 +124,9 @@ namespace ChatManager
         #endregion
 
         #region Send Message
-        protected async Task<bool> _SendMessage(int RoomId, int SenderUserId, string Text)
+        protected async Task<bool> _SendMessage(int RoomId, User user, string Text)
         {
-            var query = $"INSERT INTO MESSAGE(chat_room_id, message, owner, timestamp) VALUES ({RoomId}, '{Text}', {SenderUserId}, {Chat.GetTimeStamp()});";
+            var query = $"INSERT INTO MESSAGE(chat_room_id, message, owner, timestamp, owner_name) VALUES ({RoomId}, '{Text}', {user.userid}, {Chat.GetTimeStamp()}, '{user.login}');";
             try
             {
                 using (var _Connection = Connection.GetConnection())
@@ -192,6 +222,11 @@ namespace ChatManager
                         command.CommandText = query;
                         await command.ExecuteNonQueryAsync();
 
+                        if (!_TempListOfChatRooms.Any(p => p.Id == chatRoom.Id))
+                        {
+                            _TempListOfChatRooms.Add(chatRoom);
+                        }
+                        
                         return chatRoom;
                     }
                 };
@@ -222,11 +257,14 @@ namespace ChatManager
 
         protected async Task<bool> _RemoveUserFromChatRoom(User User, ChatRoom ChatRoom)
         {
-            var userChatSequence = GetIDSequence(GetListOfIdFromText(User.messages)).Replace($"{ChatRoom.Id}#", "");
-            var chatUserSequence = GetIDSequence(GetListOfIdFromText(GetTextFromList<User>(ChatRoom.Users, "userid")));
+            var userChatSequence = User.messages.Replace($"{ChatRoom.Id}#", "");
 
             string query = $"UPDATE USERS SET messages = '{userChatSequence}' WHERE userid = {User.userid};";
-            query += $"UPDATE CHAT_ROOM SET users = '{chatUserSequence} WHEREs chat_room_id = {ChatRoom.Id};";
+            query += " DECLARE @string VARCHAR(512);";
+            query += " DECLARE @SQL VARCHAR(1024); ";
+            query += $" SET @string = REPLACE((SELECT users FROM CHAT_ROOM WHERE chat_room_id = {ChatRoom.Id}), '{User.userid}#', ''); ";
+            query += $" SET @SQL = 'UPDATE CHAT_ROOM SET users = ''' + @string + ''' WHERE chat_room_id = {ChatRoom.Id};'; ";
+            query += " EXECUTE(@SQL)";
 
             try
             {
@@ -274,11 +312,11 @@ namespace ChatManager
         #endregion
 
         #region Get Chat Room
-        private string GetTextFromList<T>(List<T> List, string PropetyName)
+        private string GetTextFromList<T>(IEnumerable<T> List, string PropetyName)
         {
             string result = string.Empty;
 
-            int[] idies = new int[List.Count];
+            int[] idies = new int[List.Count()];
 
             foreach (var id in List.Select(p => p.GetType().GetProperty(PropetyName).GetValue(p, null)))
             {
@@ -293,7 +331,7 @@ namespace ChatManager
             return Text.Split(new string[] { "#" }, StringSplitOptions.RemoveEmptyEntries).Select(p => int.Parse(p));
         }
 
-        private async Task<List<T>> GetListFromTextId<T>(string Text)
+        protected async Task<List<T>> GetListFromTextId<T>(string Text)
         {
             var usersId = Text.Split(new string[] { "#" }, StringSplitOptions.RemoveEmptyEntries).Select(p => int.Parse(p));
 
@@ -324,6 +362,25 @@ namespace ChatManager
             }
             return string.Concat(outText.Take(outText.Length - 1));
         }
+
+        protected string _GetQueryStringForChatRoomsOfUser(int UserId)
+        {
+            string  query = "DECLARE @string VARCHAR(512);";
+            query += "DECLARE @SQL VARCHAR(1024);";
+            query += $"SET @string = REPLACE((SELECT messages FROM USERS WHERE userid = {UserId}), '#', ', ' );";
+            query += " if len(@string) = 0";
+            query += " BEGIN";
+            query += " SELECT '' as nothing;";
+            query += " END";
+            query += " ELSE";
+            query += " BEGIN";
+            query += " SET @string = left(@string, len(@string) - 1);";
+            query += " SET @SQL = 'SELECT * FROM CHAT_ROOM WHERE chat_room_id IN(' + (@string) + ');';";
+            query += " EXECUTE(@SQL);";
+            query += " END";
+
+            return query;
+        }
         protected async Task<List<T>> _GetMultiListFromIdies<T>(IEnumerable<int> ListOfId, int UserId = -1, bool NewList = false)
         {
             string query = string.Empty;
@@ -340,19 +397,7 @@ namespace ChatManager
                 }
                 else
                 {
-                    query = "DECLARE @string VARCHAR(512);";
-                    query += "DECLARE @SQL VARCHAR(1024);";
-                    query += $"SET @string = REPLACE((SELECT messages FROM USERS WHERE userid = {UserId}), '#', ', ' );";
-                    query += " if len(@string) = 0";
-                    query += " BEGIN";
-                    query += " SELECT '' as nothing;";
-                    query += " END";
-                    query += " ELSE";
-                    query += " BEGIN";
-                    query += " SET @string = left(@string, len(@string) - 1);";
-                    query += " SET @SQL = 'SELECT * FROM CHAT_ROOM WHERE chat_room_id IN(' + (@string) + ');';";
-                    query += " EXECUTE(@SQL);";
-                    query += " END";
+                    query += _GetQueryStringForChatRoomsOfUser(UserId);
                 }
             }
             else if (typeof(T) == typeof(User))
@@ -383,10 +428,13 @@ namespace ChatManager
                                     {
                                         Id = reader.GetInt32(0),
                                         Name = reader.GetString(1),
-                                        Owner = await _GetUser(reader.GetInt32(3)),
-                                        Users = await GetListFromTextId<User>(reader.GetString(2)),
+                                        OwnerId = reader.GetInt32(3),
+                                        UsersString = reader.GetString(2),
                                     };
-
+                                    if (!_TempListOfChatRooms.Any(p => p.Id == chatRoom.Id))
+                                    {
+                                        _TempListOfChatRooms.Add(chatRoom);
+                                    }
                                     returnList.Add((T)(object)chatRoom);
                                 }
                                 else
@@ -403,6 +451,10 @@ namespace ChatManager
                                         userteams = $"{reader.GetValue(9)}"
                                     };
 
+                                    if(!_TempListOfUsers.Any(p => p.userid == user.userid))
+                                    {
+                                        _TempListOfUsers.Add(user);
+                                    }
                                     returnList.Add((T)(object)user);
                                 }
                             }
@@ -421,6 +473,12 @@ namespace ChatManager
 
         protected async Task<ChatRoom> _GetChatRoom(int Id = -1, string Name = "")
         {
+            var tempResult = _TempListOfChatRooms.FirstOrDefault(p => p.Id == Id);
+            if (tempResult != null)
+            {
+                return tempResult;
+            }
+
             var query = $"SELECT * FROM CHAT_ROOM WHERE ";
 
             if (Id != -1)
@@ -448,11 +506,14 @@ namespace ChatManager
                                 {
                                     Id = reader.GetInt32(0),
                                     Name = reader.GetString(1),
-                                    Owner = await _GetUser(reader.GetInt32(3)),
-                                    Users = await GetListFromTextId<User>(reader.GetString(2))
+                                    OwnerId = reader.GetInt32(3),
+                                    UsersString = reader.GetString(2)
                                 };
 
-
+                                if (!_TempListOfChatRooms.Any(p => p.Id == chatRoom.Id))
+                                {
+                                    _TempListOfChatRooms.Add(chatRoom);
+                                }
                                 return chatRoom;
                             }
 
@@ -472,6 +533,12 @@ namespace ChatManager
         #region Get User
         protected async Task<User> _GetUser(int Id = -1, string Login = "", bool GetLastMessage = false)
         {
+            var tempResult = _TempListOfUsers.FirstOrDefault(p => p.userid == Id || p.login == Login);
+            if (tempResult != null)
+            {
+                return tempResult;
+            }
+
             var query = $"SELECT * FROM USERS WHERE ";
 
             if (Id != -1)
@@ -514,6 +581,10 @@ namespace ChatManager
                                     messages = $"{reader.GetValue(8)}",
                                     userteams = $"{reader.GetValue(9)}"
                                 };
+                                if (!_TempListOfUsers.Any(p => p.userid == user.userid))
+                                {
+                                    _TempListOfUsers.Add(user);
+                                }
                                 break;
                             }
 

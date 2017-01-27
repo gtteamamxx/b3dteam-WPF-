@@ -6,12 +6,16 @@ using System.Threading.Tasks;
 
 namespace ChatManager
 {
-    public class Message
+    public class Message : QueryBuilder
     {
         public int message_id { get; protected internal set; }
         public int chat_room_id { get; protected internal set; }
         public string message { get; protected internal set; }
-        public User owner { get; protected internal set; }
+        private User owner { get; set; }
+        public int ownerId { get; protected internal set; }
+        public string ownerName { get; protected internal set; }
         public int timestamp { get; protected internal set; }
+
+        public async Task<User> GetOwner() => await _GetUser(ownerId);
     }
 }

@@ -42,7 +42,9 @@ namespace b3dteam_app.View
 
             if (ClientUser == null)
             {
-                throw new NotImplementedException();
+                MessageBox.Show("There was problem wtih this account. Try again later.");
+                MainWindow.gui.Close();
+                return;
             }
             else
             {
@@ -53,7 +55,7 @@ namespace b3dteam_app.View
                 (await ClientUser.GetUserChatRooms()).ForEach(p => AddChatRoom(p));
 
                 ClientUser.StartListeningChanges();
-                textblock_Update.Text = "Your talks:";
+                textblock_Update.Text = $"Your talks: {ClientUser.GetUserChatRooms(false).Result.Count}";
                 listview_Contact.IsEnabled = true;
             }
         }
@@ -82,7 +84,7 @@ namespace b3dteam_app.View
 
         private void button_RemoveContact_Click(object sender, RoutedEventArgs e)
         {
-
+            new UserUtilities.RemoveContact(this).ShowDialog();
         }
 
         private void button_UserList_Click(object sender, RoutedEventArgs e)
@@ -117,15 +119,26 @@ namespace b3dteam_app.View
 
             if(ChatRoom != null)
             {
-
+                AddChatRoom(ChatRoom);
             }
 
             return true;
         }
 
-        private void RemoveChatRoom(ChatManager.ChatRoom chatRoom)
+        public async Task<bool> RemoveChatRoom(ChatManager.ChatRoom chatRoom)
         {
-            listview_Contact.Items.Remove(Chat.FindVisualChildren<Grid>(this).First(p => p.Name == "chatroom" && int.Parse(((TextBlock)p.Children[0]).Text.Replace("#", "")) == chatRoom.Id));
+            if (chatRoom != null)
+            {
+                var res = await ClientUser.RemoveThisUserFromChatRoom(chatRoom);
+
+                if(res == false)
+                {
+                    return false;
+                }
+                var itemToRemove = Chat.FindVisualChildren<Grid>(this).First(p => p.Name == "chatroom" && int.Parse(((TextBlock)p.Children[0]).Text.Replace("#", "")) == chatRoom.Id);
+                listview_Contact.Items.Remove(itemToRemove);
+            }
+            return true;
         }
 
         private void AddChatRoom(ChatManager.ChatRoom chatRoom)

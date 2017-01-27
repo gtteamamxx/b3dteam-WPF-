@@ -15,29 +15,24 @@ namespace ChatManager
             New
         }
 
+        private List<User> _allusers { get; set; }
+
         public int Id { get; protected internal set; }
         public string Name { get; protected internal set; }
-        private List<User> _allusers { get; set; }
-        public List<User> Users { get { return _allusers; } protected internal set
-            {
-                _allusers = value;
-                _allusers.Add(this.Owner);
-            } }
+
+        public string UsersString { get; protected internal set; }
+        public List<User> Users { get { return _allusers; } protected internal set { _allusers = value; _allusers.Add(this.Owner); } }
+
+        public int OwnerId { get; protected internal set; }
         public User Owner { get; protected internal set; }
+        
+        public async Task<bool> SendMessage(User user, string message)  => await _SendMessage(this.Id, user, message);
 
-        public async Task<bool> SendMessage(int SenderUserIdr, string message)
-        {
-            return await _SendMessage(this.Id, SenderUserIdr, message);
-        }
+        public async Task<List<Message>> GetMessages(int Limit = 25) => await _GetMessages(this.Id, Limit);
 
-        public async Task<List<Message>> GetMessages(int Limit = 25)
-        {
-            return await _GetMessages(this.Id, Limit);
-        }
-
-        public bool UserHasAccesToChannel(User user)
-        {
-            return (user.userid == Owner.userid || Users.FirstOrDefault(p => p.userid == user.userid) != null);
-        }
+        public async Task<User> GetOwner() => await _GetUser(this.OwnerId);
+        
+        public bool UserHasAccesToChannel(User user) =>_allusers.Any(p => p.userid == user.userid);
+        
     }
 }

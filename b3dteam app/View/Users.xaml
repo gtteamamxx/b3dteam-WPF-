@@ -6,8 +6,8 @@
              xmlns:local="clr-namespace:b3dteam_app.View"
              mc:Ignorable="d" 
              xmlns:wf="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
-             d:DesignHeight="580" 
-             d:DesignWidth="800">
+             d:DesignHeight="520" 
+             d:DesignWidth="810">
 
     <Grid Background="White">
 
@@ -39,8 +39,8 @@
                     VerticalAlignment="Top" />
 
             <Button Width="100"
-                    Height="30"
-                    Content="User list"
+                    Height="25"
+                    Content="Users list"
                     Name="button_UserList"
                     Click="button_UserList_Click"
                     HorizontalAlignment="Center"
@@ -75,7 +75,7 @@
                               HorizontalAlignment="Left"
                               VerticalAlignment="Top"
                               Margin="10,50,0,0"
-                              Height="470"
+                              Height="410"
                               Visibility="Visible">
 
                 <wf:RichTextBox ReadOnly="True"
