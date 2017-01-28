@@ -217,7 +217,7 @@ namespace b3dteam_app.View
             richTextBox.ScrollToCaret();
         }
 
-        private void CheckLastMessageTimeAndAddDateLineIfNeeded(System.Windows.Forms.RichTextBox richTextBox, Discord.Message message)
+        public void CheckLastMessageTimeAndAddDateLineIfNeeded(System.Windows.Forms.RichTextBox richTextBox, Discord.Message message)
         {
             if (_LastMessageTime.Day != message.Timestamp.Day)
             {

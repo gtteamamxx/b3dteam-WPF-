@@ -67,6 +67,15 @@ namespace b3dteam_app.View.Options.Options
             Properties.Settings.Default.password = "";
             Properties.Settings.Default.Save();
             MessageBox.Show("If you want to login on chat, go to Chat page", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            textblock_CurrentNick.Text = "Current name: Not logged in";
+
+            textbox_Login.Text = Properties.Settings.Default.email;
+            textbox_Password.Password = Properties.Settings.Default.password;
+
+            radio_Autologin_Enabledd.IsChecked = false;
+            radio_Autologin_Disabledd.IsChecked = true;
+
             View.Chat.gui.ResetPage();
         }
     }

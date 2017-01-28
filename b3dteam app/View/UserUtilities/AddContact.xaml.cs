@@ -91,7 +91,11 @@ namespace b3dteam_app.View.UserUtilities
         {
             listview_Users.Items.Clear();
 
+            listview_Users.Items.Add(new TextBlock() { Text = "Finding..." });
+
             SetButtonsStatus(false);
+            await Task.Delay(100);
+
             int res = -1;
             if (int.TryParse(textbox_FindBox.Text, out res))
             {
@@ -103,18 +107,39 @@ namespace b3dteam_app.View.UserUtilities
                     AddNoItemsFoundText();
                     return;
                 }
+                listview_Users.Items.Clear();
                 listview_Users.Items.Add(new TextBlock() { Text = $"{user.userid}# {user.login}" });
             }
             else
             {
-                (await helper.SQLManager.GetUsers()).Where(p => (p.login.ToLower().StartsWith(textbox_FindBox.Text.ToLower()))).Where(p => !Users.ClientUser.IsPrivateChatRoomWithUser(new ChatManager.User() { userid = p.userid })).ToList().ForEach(
-                    p => listview_Users.Items.Add(new TextBlock() {Text = $"{p.userid}# {p.login}" }));
+                bool firstLoop = false;
+                (await helper.SQLManager.GetUsers()).
+                        Where(p => 
+                            (p.login.ToLower()
+                                .Contains(textbox_FindBox.Text.ToLower())))
+                                        .Where(p => !Users.ClientUser.IsPrivateChatRoomWithUser(new ChatManager.User() { userid = p.userid }))
+                                            .ToList()
+                                                .ForEach(p =>
+                                                        {
+                                                            if (firstLoop == false)
+                                                            {
+                                                                listview_Users.Items.Clear();
+                                                                firstLoop = true;
+                                                            }
+                                                            listview_Users.Items.Add(new TextBlock() { Text = $"{p.userid}# {p.login}" });
+                                                        });
+
+                if(firstLoop == false)
+                {
+                    listview_Users.Items.Clear();
+                }
             }
 
             if(listview_Users.Items.Count == 0)
             {
                 AddNoItemsFoundText();
             }
+
             SetButtonsStatus(true);
         }
 

@@ -61,7 +61,10 @@ namespace b3dteam_app.View.UserUtilities
         {
             button_Leave.IsEnabled = false;
 
-            var selectedRoom = Users.ClientUser.GetUserChatRooms(false).Result.FirstOrDefault(p => p.Id == int.Parse(((listview_Users.SelectedItem as Grid).Children[0] as TextBlock).Text.Replace("#", "")));
+            button_Leave.Content = "Leaving...";
+            await Task.Delay(100);
+
+            var selectedRoom = (await Users.ClientUser.GetUserChatRooms(false)).FirstOrDefault(p => p.Id == int.Parse(((listview_Users.SelectedItem as Grid).Children[0] as TextBlock).Text.Replace("#", "")));
             if(selectedRoom == null)
             {
                 return;
@@ -75,6 +78,8 @@ namespace b3dteam_app.View.UserUtilities
             {
                 MessageBox.Show("There was problem with removing a talk.");
             }
+
+            button_Leave.Content = "Leave";
 
             button_Leave.IsEnabled = true;
         }

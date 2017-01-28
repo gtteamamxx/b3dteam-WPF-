@@ -52,8 +52,8 @@ namespace ChatManager
                                     chat_room_id = reader.GetInt32(1),
                                     message = reader.GetString(2),
                                     ownerId = reader.GetInt32(3),
-                                    timestamp = reader.GetInt32(4),
-                                    ownerName = reader.GetString(5)
+                                    ownerName = reader.GetString(4),
+                                    timestamp = reader.GetInt32(5)
                                 };
 
                                 if(!_TempListOfMessages.Any(p => p.message_id == message.message_id))
@@ -78,7 +78,7 @@ namespace ChatManager
         #region Get Messages
         protected async Task<List<Message>> _GetMessages(int RoomId, int Limit = 100)
         {
-            var query = $"SELECT * FROM MESSAGES WHERE chat_room_id = {RoomId} ORDER BY message_id DESC LIMIT {Limit};";
+            var query = $"SELECT * FROM ( SELECT * FROM MESSAGES WHERE chat_room_id = {RoomId} ORDER BY message_id DESC LIMIT {Limit})  AS T ORDER BY message_id; ";
 
             try
             {
@@ -86,7 +86,6 @@ namespace ChatManager
                 {
                     using (var command = new MySqlCommand(query, _Connection))
                     {
-
                         await _Connection.OpenAsync();
 
                         using (var reader = await command.ExecuteReaderAsync())
@@ -101,9 +100,10 @@ namespace ChatManager
                                     chat_room_id = reader.GetInt32(1),
                                     message = reader.GetString(2),
                                     ownerId = reader.GetInt32(3),
-                                    timestamp = reader.GetInt32(4),
-                                    ownerName = reader.GetString(5)
+                                    ownerName = reader.GetString(4),
+                                    timestamp = reader.GetInt32(5)
                                 };
+
                                 listOfMessages.Add(message);
 
                                 if (!_TempListOfMessages.Any(p => p.message_id == message.message_id))
@@ -125,9 +125,9 @@ namespace ChatManager
         #endregion
 
         #region Send Message
-        protected async Task<bool> _SendMessage(int RoomId, User user, string Text)
+        protected async Task<Message> _SendMessage(int RoomId, User user, string Text)
         {
-            var query = $"INSERT INTO MESSAGES(chat_room_id, message, owner, timestamp, owner_name) VALUES ({RoomId}, '{Text}', {user.userid}, {Chat.GetTimeStamp()}, '{user.login}');";
+            var query = $"INSERT INTO MESSAGES(chat_room_id, message, owner, timestamp, owner_name) VALUES ({RoomId}, '{Text}', {user.userid}, {Chat.GetTimeStamp()}, '{user.login}'); SELECT * FROM MESSAGES ORDER BY message_id DESC LIMIT 1;";
             try
             {
                 using (var _Connection = Connection.GetConnection())
@@ -135,15 +135,40 @@ namespace ChatManager
                     using (var command = new MySqlCommand(query, _Connection))
                     {
                         await _Connection.OpenAsync();
-                        await command.ExecuteNonQueryAsync();
-                        return true;
+
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            var listOfMessages = new List<Message>();
+
+                            while (await reader.ReadAsync())
+                            {
+                                var message = new Message()
+                                {
+                                    message_id = reader.GetInt32(0),
+                                    chat_room_id = reader.GetInt32(1),
+                                    message = reader.GetString(2),
+                                    ownerId = reader.GetInt32(3),
+                                    ownerName = reader.GetString(4),
+                                    timestamp = reader.GetInt32(5)
+                                };
+
+                                if (!_TempListOfMessages.Any(p => p.message_id == message.message_id))
+                                {
+                                    _TempListOfMessages.Add(message);
+                                }
+
+                                return message;
+                            }
+
+                            return null;
+                        }
                     }
                 };
 
             }
             catch
             {
-                return false;
+                return null;
             }
         }
         #endregion
@@ -611,5 +636,11 @@ namespace ChatManager
             }
         }
         #endregion
+
+        protected DateTime _GetDateTimeFromTimeStamp(int timestamp)
+        {
+            DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+            return dtDateTime.AddSeconds(timestamp).ToLocalTime();
+        }
     }
 }

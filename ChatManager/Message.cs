@@ -17,5 +17,8 @@ namespace ChatManager
         public int timestamp { get; protected internal set; }
 
         public async Task<User> GetOwner() => await _GetUser(ownerId);
+
+        public DateTime GetDateTimeFromTimeStamp() => _GetDateTimeFromTimeStamp(this.timestamp);
+        
     }
 }

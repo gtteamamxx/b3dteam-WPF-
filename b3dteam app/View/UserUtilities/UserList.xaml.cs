@@ -87,6 +87,10 @@ namespace b3dteam_app.View.UserUtilities
 
         private void listview_Users_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if(listview_Users.SelectedItem == null)
+            {
+                return;
+            }
             grid_UserInfo.Visibility = Visibility.Visible;
             var userName = ((listview_Users.SelectedItem as StackPanel).Children[0] as TextBlock).Text;
             ShowUserInfo(userName);

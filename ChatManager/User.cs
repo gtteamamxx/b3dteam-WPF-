@@ -28,15 +28,19 @@ namespace ChatManager
         public string messages { get; protected internal set; }
         public string userteams { get; protected internal set; }
 
-        internal protected List<ChatRoom> _usersChatRoom { get; set; }
+        internal protected List<ChatRoom> _UsersChatRoom { get; set; }
         internal protected int _LastMessageId { get; set; }
+
+        internal protected List<Message> _ListOfsendedMessagesButNotFetched;
 
         public User()
         {
-            _usersChatRoom = new List<ChatRoom>();
-        }
+            _UsersChatRoom = new List<ChatRoom>();
+            _ListOfsendedMessagesButNotFetched = new List<Message>();
+    }
 
-        public void StartListeningChanges()
+    #region Listening Changes
+    public void StartListeningChanges()
         {
             BackgroundWorker worker = new BackgroundWorker();
             worker.WorkerReportsProgress = true;
@@ -59,7 +63,17 @@ namespace ChatManager
 
                         if (this.messages.Length > 0)
                         {
-                            query += $"SELECT * FROM MESSAGES WHERE message_id > {this._LastMessageId} AND chat_room_id IN ({GetIDSequence(GetListOfIdFromText(this.messages))}) ORDER BY message_id DESC;";
+                            query += $" SELECT * FROM MESSAGES WHERE message_id > {this._LastMessageId}";
+
+                            if (this._ListOfsendedMessagesButNotFetched.Count() > 0)
+                            {
+                                foreach(Message msg in this._ListOfsendedMessagesButNotFetched)
+                                {
+                                    query += $" AND message_id <> {msg.message_id}";
+                                }
+                            }
+
+                            query += $" AND chat_room_id IN ({GetIDSequence(GetListOfIdFromText(this.messages))});";
                         }
 
                         int i = 0;
@@ -89,7 +103,7 @@ namespace ChatManager
                                 lastRooms.Where(p => !newRooms.Contains(p)).ToList().ForEach(p =>
                                 {
                                     listDeletedRooms.Add(new ChatRoom() { Id = p });
-                                    _usersChatRoom.Remove(_usersChatRoom.First(g => g.Id == p));
+                                    this._UsersChatRoom.Remove(this._UsersChatRoom.First(g => g.Id == p));
                                 });
 
                                 if (listDeletedRooms.Count > 0)
@@ -107,7 +121,7 @@ namespace ChatManager
                                     if (i == 0)
                                     {
                                         i++;
-                                        _LastMessageId = reader.GetInt32(0);
+                                        this._LastMessageId = reader.GetInt32(0);
                                     }
 
                                     var message = new Message()
@@ -116,11 +130,20 @@ namespace ChatManager
                                         chat_room_id = reader.GetInt32(1),
                                         message = reader.GetString(2),
                                         ownerId = reader.GetInt32(3),
-                                        timestamp = reader.GetInt32(4),
-                                        ownerName = reader.GetString(5)
+                                        ownerName = reader.GetString(4),
+                                        timestamp = reader.GetInt32(5)
                                     };
 
                                     worker.ReportProgress(1, message);
+                                }
+
+                                if (this._ListOfsendedMessagesButNotFetched.Count > 0)
+                                {
+                                    int maxValueOfIdInTempMessages = this._ListOfsendedMessagesButNotFetched.Max(p => p.message_id);
+
+                                    this._LastMessageId = maxValueOfIdInTempMessages > this._LastMessageId ? maxValueOfIdInTempMessages : this._LastMessageId;
+
+                                    this._ListOfsendedMessagesButNotFetched.Clear();
                                 }
                             }
 
@@ -131,7 +154,7 @@ namespace ChatManager
 
                             if (tempListWithIDOfNewRooms.Count > 0)
                             {
-                                listNewRooms = _GetMultiListFromIdies<ChatRoom>(tempListWithIDOfNewRooms).Result;
+                                listNewRooms = _GetMultiListFromIdies<ChatRoom>(tempListWithIDOfNewRooms).Result.OrderByDescending(p => p.Id).ToList();
                                 worker.ReportProgress(2, listNewRooms);
                             }
                         }
@@ -152,13 +175,16 @@ namespace ChatManager
                 else if (e.ProgressPercentage == 2)
                 {
                     OnUserRoomsChanged(e.UserState as List<ChatRoom>, ChatRoom.RoomChangeType.New);
-                    _usersChatRoom.AddRange(e.UserState as List<ChatRoom>);
+                    _UsersChatRoom.AddRange(e.UserState as List<ChatRoom>);
                 }
             };
 
             worker.RunWorkerAsync();
         }
 
+        #endregion
+
+        #region Is This user in privaste room with otheru ser
         public bool IsPrivateChatRoomWithUser(User User)
         {
             List<int> users = new List<int>();
@@ -166,7 +192,7 @@ namespace ChatManager
             users.Add(this.userid);
 
             bool returnValue = false;
-            _usersChatRoom.ForEach(p =>
+            _UsersChatRoom.ForEach(p =>
             {
                 if (returnValue == false)
                 {
@@ -180,6 +206,10 @@ namespace ChatManager
 
             return returnValue;
         }
+
+        #endregion
+
+        #region Get User Chat Rooms
         public async Task<List<ChatRoom>> GetUserChatRooms(bool NewList = true)
         {
             bool downloadList = false;
@@ -190,15 +220,20 @@ namespace ChatManager
             }
             else
             {
-                downloadList = _usersChatRoom == null ? true : false;
+                downloadList = _UsersChatRoom == null ? true : false;
             }
 
-            return downloadList ? _usersChatRoom = (await _GetMultiListFromIdies<ChatRoom>(null, this.userid, true)) ?? new List<ChatRoom>() : _usersChatRoom;
+            return downloadList ? _UsersChatRoom = (await _GetMultiListFromIdies<ChatRoom>(null, this.userid, true)) ?? new List<ChatRoom>() : _UsersChatRoom;
         }
+
+        #endregion
+
         public async Task<bool> UpdateUserInformation(List<ChatRoom> ChatRooms = null)
         {
             return await _UpdateUserInformation(this.userid, ChatRooms);
         }
+
+        #region Remove This user From Chat Room
         public async Task<bool> RemoveThisUserFromChatRoom(ChatRoom Room)
         {
             var res = await _RemoveUserFromChatRoom(this, Room);
@@ -206,14 +241,18 @@ namespace ChatManager
             if (res)
             {
                 this.messages = this.messages.Replace($"{Room.Id}#", "");
-                var itemToDelete = _usersChatRoom.FirstOrDefault(p => p.Id == Room.Id);
+                var itemToDelete = _UsersChatRoom.FirstOrDefault(p => p.Id == Room.Id);
                 if(itemToDelete != null)
                 {
-                    _usersChatRoom.Remove(itemToDelete);
+                    _UsersChatRoom.Remove(itemToDelete);
                 }
             }
 
             return res;
         }
+        #endregion
+
+        public DateTime GetDateTimeFromLastActivity() => _GetDateTimeFromTimeStamp(this.lastactivity);
+        public DateTime GetDateTimeFromRegisterTime() => _GetDateTimeFromTimeStamp(this.regtime);
     }
 }

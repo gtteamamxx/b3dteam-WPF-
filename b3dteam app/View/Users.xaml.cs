@@ -23,6 +23,10 @@ namespace b3dteam_app.View
         public static ChatManager.Chat ChatEngine;
         public static ChatManager.User ClientUser;
 
+        public System.Windows.Forms.RichTextBox GetRichTextBox => (System.Windows.Forms.RichTextBox)textbox_Chat.Child;
+        private ChatManager.ChatRoom GetSelectedChatRoom() => ClientUser.GetUserChatRooms(false).Result.FirstOrDefault(p => p.Id == int.Parse(((listview_Contact.SelectedItem as Grid).Children[0] as TextBlock).Text.Replace("#", "")));
+        
+
         public Users()
         {
             InitializeComponent();
@@ -76,7 +80,10 @@ namespace b3dteam_app.View
 
         private void ClientUser_OnMessageReceived(ChatManager.Message message)
         {
-            throw new NotImplementedException();
+            if(GetSelectedChatRoom().Id == message.chat_room_id)
+            {
+                AddMessage(GetRichTextBox, message);
+            }
         }
 
         private void button_AddContact_Click(object sender, RoutedEventArgs e)
@@ -91,18 +98,123 @@ namespace b3dteam_app.View
 
         private void button_UserList_Click(object sender, RoutedEventArgs e)
         {
-            var userListWindow = new UserUtilities.UserList();
-            userListWindow.Show();
+            
+            new UserUtilities.UserList().Show();
         }
 
-        private void textbox_MessagePrivate_KeyUp(object sender, KeyEventArgs e)
-        {
+        private static bool _IsSendingMessage = false;
 
+        private async void textbox_MessagePrivate_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter && (Keyboard.Modifiers & ModifierKeys.Shift) != ModifierKeys.Shift && !_IsSendingMessage)
+            {
+                var messageText = textbox_MessagePrivate.Text.Trim();
+
+                if (messageText.Length == 0)
+                {
+                    return;
+                }
+                else if(messageText.Length > 240)
+                {
+                    MessageBox.Show("Max lenght of one message is 240 chars.", "Message too long", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                _IsSendingMessage = true;
+                textbox_MessagePrivate.IsReadOnly = true;
+
+                textbox_MessagePrivate.Text = "Sending... : " + messageText;
+                await Task.Delay(50);
+
+                var message = await GetSelectedChatRoom().SendMessage(ClientUser, messageText);
+
+                textbox_MessagePrivate.Text = "";
+
+                textbox_MessagePrivate.IsReadOnly = false;
+                _IsSendingMessage = false;
+
+                if (message != null)
+                {
+                    AddMessage(GetRichTextBox, message);
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+
+                e.Handled = true;
+            }
         }
 
-        private void listview_Contact_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        #region Adding message to TextBox
+        private DateTime _LastMessageTime = new DateTime();
+        public void AddMessage(System.Windows.Forms.RichTextBox richTextBox, ChatManager.Message message)
         {
+            var author = string.IsNullOrEmpty(message.ownerName)? "Unknown user" : message.ownerName;
 
+            CheckLastMessageTimeAndAddDateLineIfNeeded(richTextBox, message);
+
+            richTextBox.AppendText($"{message.GetDateTimeFromTimeStamp().ToShortTimeString()}");
+            AppendTextToRichTextBoxForms(richTextBox, $" {author}:", Chat.gui.GetColorOfNick(author), false);
+            richTextBox.AppendText($" {message.message}\n");
+            richTextBox.SelectionStart = richTextBox.Text.Length;
+            richTextBox.ScrollToCaret();
+        }
+
+        private void CheckLastMessageTimeAndAddDateLineIfNeeded(System.Windows.Forms.RichTextBox richTextBox, ChatManager.Message message)
+        {
+            DateTime messageDateTime = message.GetDateTimeFromTimeStamp();
+            if (_LastMessageTime.Day != messageDateTime.Day)
+            {
+                AppendTextToRichTextBoxForms(richTextBox, $"=================={messageDateTime.ToShortDateString()}==================", System.Drawing.Color.Red, true);
+                _LastMessageTime = messageDateTime;
+            }
+        }
+
+        //from so
+        public void AppendTextToRichTextBoxForms(System.Windows.Forms.RichTextBox richTextBox, string text, System.Drawing.Color color, bool AddNewLine = false)
+        {
+            if (AddNewLine)
+            {
+                text += Environment.NewLine;
+            }
+
+            richTextBox.SelectionStart = richTextBox.TextLength;
+            richTextBox.SelectionLength = 0;
+
+            richTextBox.SelectionColor = color;
+            richTextBox.AppendText(text);
+            richTextBox.SelectionColor = richTextBox.ForeColor;
+        }
+
+        #endregion
+
+        private async void listview_Contact_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            GetRichTextBox.Clear();
+
+            if (listview_Contact.SelectedItem == null)
+            {
+                return;
+            }
+            AppendTextToRichTextBoxForms(GetRichTextBox, "===============DOWNLOADING MESSAGES.....===============\r\n", System.Drawing.Color.Red);
+            var messages = await GetSelectedChatRoom().GetMessages();
+
+            if (messages == null)
+            {
+                AppendTextToRichTextBoxForms(GetRichTextBox, "===============ERROR WHILE DOWNLOADING MESSAGES===============", System.Drawing.Color.Red);
+                return;
+            }
+
+            if (messages.Count() > 0)
+            {
+                GetRichTextBox.Clear();
+                messages.ForEach(p => AddMessage(GetRichTextBox, p));
+            }
+            else
+            {
+                AppendTextToRichTextBoxForms(GetRichTextBox, "===============NO MESSAGES IN THIS TALK===============\r\n", System.Drawing.Color.Red);
+            }
         }
 
         public async Task<bool> AddContactToList(ChatManager.User userToAdd = null, ChatManager.ChatRoom ChatRoom = null)
@@ -142,6 +254,14 @@ namespace b3dteam_app.View
                 }
 
                 var itemToRemove = Chat.FindVisualChildren<Grid>(this).First(p => p.Name == "chatroom" && int.Parse(((TextBlock)p.Children[0]).Text.Replace("#", "")) == chatRoom.Id);
+
+                var selectedChatRoomInListView = GetSelectedChatRoom();
+
+                if (selectedChatRoomInListView != null && chatRoom.Id == selectedChatRoomInListView.Id)
+                {
+                    GetRichTextBox.Clear();
+                }
+
                 listview_Contact.Items.Remove(itemToRemove);
             }
             return true;
